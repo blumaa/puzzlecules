@@ -191,6 +191,10 @@ export class SupabaseStorage implements IPuzzleStorage {
       query = query.lte('puzzle_date', filters.dateTo);
     }
 
+    if (filters?.unscheduled) {
+      query = query.is('puzzle_date', null);
+    }
+
     // Apply pagination
     const limit = filters?.limit ?? 50;
     const offset = filters?.offset ?? 0;

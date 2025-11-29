@@ -2,7 +2,7 @@
 
 ## Overview
 
-Filmecules uses a **single-admin model** where one logged-in user (you) has full administrative privileges, while public users can play published puzzles using the anon key without logging in.
+Puzzlecules uses a **single-admin model** where one logged-in user (you) has full administrative privileges, while public users can play published puzzles using the anon key without logging in.
 
 ## IMPORTANT: Supabase Authentication Levels
 

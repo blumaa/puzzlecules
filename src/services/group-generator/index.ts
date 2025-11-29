@@ -20,7 +20,6 @@ export type {
   IFeedbackStore,
   ITMDBVerifier,
   IAIGroupGenerator,
-  IGroupGeneratorService,
   GenerateGroupsRequest,
   GenerateGroupsResponse,
   AIGroupResponse,
@@ -31,4 +30,3 @@ export { ConnectionTypeStore } from './ConnectionTypeStore'
 export { FeedbackStore } from './FeedbackStore'
 export { TMDBVerifier } from './TMDBVerifier'
 export { AIGroupGenerator } from './AIGroupGenerator'
-export { GroupGeneratorService } from './GroupGeneratorService'

@@ -380,18 +380,8 @@ export class PuzzleGenerator {
     return filtered;
   }
 
-  /**
-   * Configure enabled/disabled analyzers in registry.
-   *
-   * Note: We can't actually modify analyzer enabled state since config is readonly.
-   * This is a placeholder for future enhancement where analyzers support
-   * dynamic enable/disable. For now, filtering happens in getEnabled() call.
-   *
-   * @private
-   */
   private configureAnalyzers(): void {
-    // TODO: Implement enable/disable when BaseAnalyzer supports it
-    // For now, analyzer filtering happens naturally via enabledAnalyzers config
+    // Analyzer filtering happens via enabledAnalyzers config
   }
 
   /**

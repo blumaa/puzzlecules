@@ -150,13 +150,6 @@ export interface IAIGroupGenerator {
   ): Promise<GeneratedGroup[]>
 }
 
-/** Group Generator Service - Orchestrates the generation pipeline */
-export interface IGroupGeneratorService {
-  generateGroups(filters: GenerationFilters): Promise<GeneratedGroup[]>
-  approveGroup(group: GeneratedGroup, difficulty: Difficulty): Promise<ApprovedGroup>
-  rejectGroup(group: GeneratedGroup, reason?: string): Promise<void>
-}
-
 // =============================================================================
 // API Types
 // =============================================================================

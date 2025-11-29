@@ -3,11 +3,6 @@
  *
  * Evaluates puzzle group quality using multiple metrics.
  * Provides configurable thresholds for quality control.
- *
- * Following SOLID principles:
- * - Single Responsibility: Only handles quality validation
- * - Open/Closed: New metrics can be added without breaking existing code
- * - Dependency Inversion: Implements IQualityValidator interface
  */
 
 import type {
@@ -18,18 +13,6 @@ import type {
 
 /**
  * Validates puzzle group quality using multiple metrics.
- *
- * Current metrics:
- * - Obscurity Score (0-100): Based on average vote counts
- * - Diversity Score (0-100): Placeholder for future implementation
- * - Consistency Score (0-100): Placeholder for future implementation
- * - Overall Score (0-100): Weighted combination of all metrics
- *
- * Future enhancements could include:
- * - Genre diversity within group
- * - Era diversity (release year spread)
- * - Consistency of connection strength
- * - Cultural recognition (language, country)
  */
 export class QualityValidator implements IQualityValidator {
   /**
@@ -60,8 +43,8 @@ export class QualityValidator implements IQualityValidator {
    */
   validateGroup(result: AnalyzerResult): QualityMetrics {
     const obscurityScore = this.calculateObscurity(result);
-    const diversityScore = 50; // TODO: Implement diversity calculation
-    const consistencyScore = 50; // TODO: Implement consistency calculation
+    const diversityScore = 50;
+    const consistencyScore = 50;
 
     const overallScore =
       obscurityScore * this.weights.obscurity +

@@ -8,7 +8,7 @@
 import type { IStatsStorage, UserStats, GameResult } from '../types/stats';
 import { getTodayDate } from '../utils/index';
 
-const STORAGE_KEY = 'filmecules-stats';
+const STORAGE_KEY = 'puzzlecules-stats';
 
 /**
  * Get the date for yesterday in YYYY-MM-DD format

@@ -46,6 +46,8 @@ export interface PuzzleListFilters {
   status?: PuzzleStatus | PuzzleStatus[];
   dateFrom?: string;
   dateTo?: string;
+  /** Filter for puzzles with no scheduled date (puzzleDate IS NULL) */
+  unscheduled?: boolean;
   limit?: number;
   offset?: number;
 }

@@ -74,7 +74,7 @@ Each group should have exactly 4 films that share a clever, interesting connecti
 
 IMPORTANT REQUIREMENTS:
 - Each group must have exactly 4 films
-- All films must be real, well-known films
+- All films must be real, mostly well-known films
 - Connections should be creative, surprising, and satisfying to discover
 - Avoid obvious or boring connections
 - Each film should clearly fit the connection
