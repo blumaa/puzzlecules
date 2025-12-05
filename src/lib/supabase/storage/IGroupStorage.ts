@@ -5,7 +5,7 @@
  * Following Interface Segregation and Dependency Inversion principles.
  */
 
-import type { Film } from '../../../types';
+import type { Item, Genre } from '../../../types';
 import type { Database } from '../types';
 
 /**
@@ -29,7 +29,7 @@ export type DifficultyLevel = 'easy' | 'medium' | 'hard' | 'hardest';
 export interface StoredGroup {
   id: string;
   createdAt: number;
-  films: Film[];
+  items: Item[];
   connection: string;
   connectionType: string;
   difficultyScore: number;
@@ -39,6 +39,8 @@ export interface StoredGroup {
   usageCount: number;
   lastUsedAt: number | null;
   metadata?: Record<string, unknown>;
+  /** Genre/domain this group belongs to */
+  genre: Genre;
 }
 
 /**
@@ -53,8 +55,29 @@ export interface GroupListFilters {
   status?: GroupStatus | GroupStatus[];
   color?: DifficultyColor | DifficultyColor[];
   connectionType?: string;
+  /** Filter by genre/domain */
+  genre?: Genre;
   limit?: number;
   offset?: number;
+  /** Exclude specific group IDs from results */
+  excludeIds?: string[];
+  /** Sort by freshness (usage_count ASC, last_used_at ASC NULLS FIRST) */
+  sortByFreshness?: boolean;
+}
+
+/**
+ * Group counts by difficulty color
+ */
+export type GroupCountsByColor = Record<DifficultyColor, number>;
+
+/**
+ * Result from getFreshestGroupSet - one group per color
+ */
+export interface FreshestGroupSet {
+  yellow: StoredGroup | null;
+  green: StoredGroup | null;
+  blue: StoredGroup | null;
+  purple: StoredGroup | null;
 }
 
 /**
@@ -66,6 +89,8 @@ export interface GroupUpdate {
   difficulty?: DifficultyLevel;
   status?: GroupStatus;
   metadata?: Record<string, unknown>;
+  /** Update genre (rare, but possible) */
+  genre?: Genre;
 }
 
 /**
@@ -147,4 +172,23 @@ export interface IGroupStorage {
    * @returns Promise that resolves when update is complete
    */
   incrementUsage(groupIds: string[]): Promise<void>;
+
+  /**
+   * Get count of approved groups per difficulty color.
+   * Used to check pool health before pipeline operations.
+   *
+   * @param genre - Genre/domain to filter by
+   * @returns Promise resolving to counts per color
+   */
+  getGroupCountsByColor(genre?: Genre): Promise<GroupCountsByColor>;
+
+  /**
+   * Get the freshest (least used) approved group for each color.
+   * Used by pipeline to select groups for new puzzles.
+   *
+   * @param excludeIds - Group IDs to exclude (already used in other puzzles)
+   * @param genre - Genre/domain to filter by
+   * @returns Promise resolving to one group per color (or null if none available)
+   */
+  getFreshestGroupSet(excludeIds: string[], genre?: Genre): Promise<FreshestGroupSet>;
 }

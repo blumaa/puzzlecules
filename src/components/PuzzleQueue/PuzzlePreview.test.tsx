@@ -6,7 +6,7 @@ import type { StoredGroup, DifficultyColor } from '../../lib/supabase/storage';
 const createMockGroup = (color: DifficultyColor, connection: string): StoredGroup => ({
   id: `group-${color}`,
   createdAt: Date.now(),
-  films: [
+  items: [
     { id: 1, title: 'Film 1', year: 2000 },
     { id: 2, title: 'Film 2', year: 2001 },
     { id: 3, title: 'Film 3', year: 2002 },
@@ -20,6 +20,7 @@ const createMockGroup = (color: DifficultyColor, connection: string): StoredGrou
   status: 'approved',
   usageCount: 0,
   lastUsedAt: null,
+  genre: 'films',
 });
 
 const mockSelectedGroups: Record<DifficultyColor, StoredGroup> = {

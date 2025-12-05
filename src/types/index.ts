@@ -1,28 +1,54 @@
-export interface Film {
+/**
+ * Genre/domain type for multi-domain support
+ */
+export type Genre = 'films' | 'music' | 'books' | 'sports';
+
+/**
+ * Available genres for the admin UI
+ */
+export const GENRES: Genre[] = ['films', 'music', 'books', 'sports'];
+
+/**
+ * Default genre for backward compatibility
+ */
+export const DEFAULT_GENRE: Genre = 'films';
+
+/**
+ * Generic item type - can be a film, song, word, etc.
+ * Domain-specific properties are optional.
+ */
+export interface Item {
   id: number;
   title: string;
-  year: number;
+  year?: number;
   director?: string;
   cast?: string[];
   genres?: string[];
   poster_path?: string;
+  artist?: string; // For music
+  album?: string; // For music
 }
+
+/**
+ * @deprecated Use Item instead - kept for backward compatibility
+ */
+export type Film = Item;
 
 export type DifficultyLevel = 'easy' | 'medium' | 'hard' | 'hardest';
 export type DifficultyColor = 'yellow' | 'green' | 'blue' | 'purple';
 
 export interface Group {
   id: string;
-  films: Film[];
+  items: Item[];
   connection: string; // e.g., "Directed by Tarantino"
   difficulty: DifficultyLevel;
   color: DifficultyColor;
 }
 
 export interface GameState {
-  films: Film[];
+  items: Item[];
   groups: Group[];
-  selectedFilmIds: number[];
+  selectedItemIds: number[];
   foundGroups: Group[];
   previousGuesses: number[][]; // Track attempted combinations
   mistakes: number;
@@ -86,6 +112,17 @@ export interface GameStats {
   currentStreak: number;
   maxStreak: number;
   lastPlayedDate: string;
+}
+
+/**
+ * Saved puzzle format for persistence.
+ */
+export interface SavedPuzzle {
+  id: string;
+  groups: Group[];
+  items: Item[];
+  createdAt: number;
+  metadata?: Record<string, unknown>;
 }
 
 // Re-export stats types

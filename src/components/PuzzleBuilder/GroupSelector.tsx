@@ -35,7 +35,7 @@ export function GroupSelector({ groups, onSelect, onCancel }: GroupSelectorProps
                   {group.connection}
                 </Text>
                 <Text size="xs">
-                  {group.films.map((f) => f.title).join(', ')}
+                  {group.items.map((item) => item.title).join(', ')}
                 </Text>
                 <Badge size="sm">Used {group.usageCount}x</Badge>
               </Box>

@@ -93,12 +93,12 @@ export function GroupPoolCard({
           </Box>
         </Box>
 
-        {/* Films list */}
+        {/* Items list */}
         <FilmGroupCard
           group={
             {
               id: group.id,
-              films: group.films,
+              items: group.items,
               connection: group.connection,
               difficulty: "medium",
               color: group.color || "green",

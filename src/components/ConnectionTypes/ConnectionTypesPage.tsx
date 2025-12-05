@@ -9,6 +9,7 @@ import { useState, useEffect, useCallback } from "react";
 import { Box, Text, Button } from "@mond-design-system/theme";
 import { Modal, ModalBody, ModalFooter } from "@mond-design-system/theme/client";
 import { useToast } from "../../providers/useToast";
+import { useGenre } from "../../providers";
 import { ConnectionTypeStore } from "../../services/group-generator";
 import type { ConnectionType } from "../../services/group-generator";
 import { ConnectionTypeHeader } from "./ConnectionTypeHeader";
@@ -23,6 +24,7 @@ const store = new ConnectionTypeStore();
 
 export function ConnectionTypesPage() {
   const { showSuccess, showError } = useToast();
+  const { genre } = useGenre();
   const [connectionTypes, setConnectionTypes] = useState<ConnectionType[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedCategory, setSelectedCategory] = useState<string>("all");
@@ -33,7 +35,7 @@ export function ConnectionTypesPage() {
   const loadConnectionTypes = useCallback(async () => {
     setLoading(true);
     try {
-      const types = await store.getAll();
+      const types = await store.getAll(genre);
       setConnectionTypes(types);
     } catch (err) {
       showError(
@@ -43,7 +45,7 @@ export function ConnectionTypesPage() {
     } finally {
       setLoading(false);
     }
-  }, [showError]);
+  }, [showError, genre]);
 
   useEffect(() => {
     loadConnectionTypes();
@@ -134,6 +136,7 @@ export function ConnectionTypesPage() {
                   description: editingType.description,
                   examples: editingType.examples,
                   active: editingType.active,
+                  genre: editingType.genre,
                 }
               : undefined
           }

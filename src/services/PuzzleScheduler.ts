@@ -7,7 +7,7 @@
 
 import type { IPuzzleStorage } from '../lib/supabase/storage';
 import type { IStatsStorage } from '../types/stats';
-import type { SavedPuzzle } from '../lib/puzzle-engine/types';
+import type { SavedPuzzle } from '../types';
 import { getTodayDate } from '../utils/index';
 
 /**

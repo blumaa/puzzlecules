@@ -7,6 +7,8 @@ import {
   Checkbox,
 } from "@mond-design-system/theme/client";
 import type { ConnectionCategory } from "../../services/group-generator";
+import type { Genre } from "../../types";
+import { useGenre } from "../../providers";
 
 const CATEGORIES: ConnectionCategory[] = [
   "word-game",
@@ -31,6 +33,7 @@ export interface ConnectionTypeFormData {
   description: string;
   examples: string[];
   active: boolean;
+  genre: Genre;
 }
 
 interface ConnectionTypeFormProps {
@@ -46,6 +49,7 @@ export function ConnectionTypeForm({
   onSubmit,
   onCancel,
 }: ConnectionTypeFormProps) {
+  const { genre } = useGenre();
   const [name, setName] = useState(initialValues?.name ?? "");
   const [category, setCategory] = useState<ConnectionCategory>(
     initialValues?.category ?? "word-game"
@@ -67,6 +71,7 @@ export function ConnectionTypeForm({
       description,
       examples: examples.split("\n").filter((e) => e.trim()),
       active,
+      genre: initialValues?.genre ?? genre,
     });
   };
 

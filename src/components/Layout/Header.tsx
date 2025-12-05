@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import { PuzzleIcon, HamburgerIcon } from "../icons";
 import { ThemeToggle } from "../ThemeToggle/ThemeToggle";
 import { HeaderMenu } from "./HeaderMenu";
+import { GenreSelector } from "../GenreSelector";
 
 interface HeaderProps {
   onSignOut: () => void;
@@ -18,17 +19,20 @@ export function Header({ onSignOut, onMenuOpen }: HeaderProps) {
         gap="md"
         justifyContent="space-between"
       >
-        <Box display="flex" alignItems="center">
-          <Box>
-            <Icon size="lg">
-              <PuzzleIcon />
-            </Icon>
+        <Box display="flex" alignItems="center" gap="md">
+          <Box display="flex" alignItems="center">
+            <Box>
+              <Icon size="lg">
+                <PuzzleIcon />
+              </Icon>
+            </Box>
+            <Link key="/admin" to="/admin" className="no-underline">
+              <Button variant="ghost">
+                <Heading size="lg">Puzzlecules</Heading>
+              </Button>
+            </Link>
           </Box>
-          <Link key="/admin" to="/admin" className="no-underline">
-            <Button variant="ghost">
-              <Heading size="lg">Puzzlecules</Heading>
-            </Button>
-          </Link>
+          <GenreSelector />
         </Box>
 
         {/* Desktop Navigation */}

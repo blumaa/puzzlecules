@@ -11,6 +11,7 @@ import type {
   ConnectionType,
   ConnectionCategory,
   IConnectionTypeStore,
+  Genre,
 } from './types'
 
 /** Database row type from Supabase */
@@ -22,17 +23,24 @@ interface ConnectionTypeRow {
   description: string
   examples: string[] | null
   active: boolean
+  genre: string
 }
 
 export class ConnectionTypeStore implements IConnectionTypeStore {
   /**
-   * Get all connection types
+   * Get all connection types, optionally filtered by genre
    */
-  async getAll(): Promise<ConnectionType[]> {
-    const { data, error } = await supabase
+  async getAll(genre?: Genre): Promise<ConnectionType[]> {
+    let query = supabase
       .from('connection_types')
       .select('*')
       .order('category', { ascending: true })
+
+    if (genre) {
+      query = query.eq('genre', genre)
+    }
+
+    const { data, error } = await query
 
     if (error) {
       throw new Error(error.message)
@@ -42,15 +50,21 @@ export class ConnectionTypeStore implements IConnectionTypeStore {
   }
 
   /**
-   * Get only active connection types
+   * Get only active connection types, optionally filtered by genre
    */
-  async getActive(): Promise<ConnectionType[]> {
-    const { data, error } = await supabase
+  async getActive(genre?: Genre): Promise<ConnectionType[]> {
+    let query = supabase
       .from('connection_types')
       .select('*')
       .eq('active', true)
       .order('category', { ascending: true })
 
+    if (genre) {
+      query = query.eq('genre', genre)
+    }
+
+    const { data, error } = await query
+
     if (error) {
       throw new Error(error.message)
     }
@@ -59,14 +73,20 @@ export class ConnectionTypeStore implements IConnectionTypeStore {
   }
 
   /**
-   * Get connection types by category
+   * Get connection types by category, optionally filtered by genre
    */
-  async getByCategory(category: ConnectionCategory): Promise<ConnectionType[]> {
-    const { data, error } = await supabase
+  async getByCategory(category: ConnectionCategory, genre?: Genre): Promise<ConnectionType[]> {
+    let query = supabase
       .from('connection_types')
       .select('*')
       .eq('category', category)
       .order('name', { ascending: true })
+
+    if (genre) {
+      query = query.eq('genre', genre)
+    }
+
+    const { data, error } = await query
 
     if (error) {
       throw new Error(error.message)
@@ -87,6 +107,7 @@ export class ConnectionTypeStore implements IConnectionTypeStore {
       description: type.description,
       examples: type.examples || null,
       active: type.active,
+      genre: type.genre,
     }
     const { data, error } = await supabase
       .from('connection_types')
@@ -117,6 +138,7 @@ export class ConnectionTypeStore implements IConnectionTypeStore {
     if (updates.examples !== undefined)
       updateData.examples = updates.examples || null
     if (updates.active !== undefined) updateData.active = updates.active
+    if (updates.genre !== undefined) updateData.genre = updates.genre
 
     const { data, error } = await supabase
       .from('connection_types')
@@ -188,6 +210,7 @@ export class ConnectionTypeStore implements IConnectionTypeStore {
       examples: row.examples || undefined,
       active: row.active,
       createdAt: new Date(row.created_at),
+      genre: (row.genre || 'films') as Genre,
     }
   }
 }

@@ -6,7 +6,7 @@ import type { StoredGroup } from '../../lib/supabase/storage';
 const mockGroup: StoredGroup = {
   id: 'group-1',
   createdAt: Date.now(),
-  films: [
+  items: [
     { id: 1, title: 'Pulp Fiction', year: 1994 },
     { id: 2, title: 'Kill Bill', year: 2003 },
     { id: 3, title: 'Reservoir Dogs', year: 1992 },
@@ -20,6 +20,7 @@ const mockGroup: StoredGroup = {
   status: 'approved',
   usageCount: 2,
   lastUsedAt: null,
+  genre: 'films',
 };
 
 describe('SelectedGroupDisplay', () => {

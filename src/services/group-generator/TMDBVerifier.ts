@@ -6,9 +6,9 @@
  */
 
 import { tmdbService } from '../tmdb'
-import type { AIFilm, VerifiedFilm, ITMDBVerifier } from './types'
+import type { AIItem, VerifiedItem, IItemVerifier } from './types'
 
-export class TMDBVerifier implements ITMDBVerifier {
+export class TMDBVerifier implements IItemVerifier {
   /** Year tolerance for matching (films can be off by 1 year) */
   private readonly yearTolerance = 1
 
@@ -16,9 +16,9 @@ export class TMDBVerifier implements ITMDBVerifier {
    * Verify a single film exists in TMDB
    * @param title - Film title to search for
    * @param year - Expected release year
-   * @returns VerifiedFilm with tmdbId if found, null if not
+   * @returns VerifiedItem with externalId (TMDB ID) if found, null if not
    */
-  async verifyFilm(title: string, year: number): Promise<VerifiedFilm> {
+  async verifyFilm(title: string, year?: number): Promise<VerifiedItem> {
     try {
       const searchResults = await tmdbService.searchMovies(title)
 
@@ -31,7 +31,8 @@ export class TMDBVerifier implements ITMDBVerifier {
         const releaseYear = this.extractYear(movie.release_date)
         if (releaseYear === null) return false
 
-        const yearMatches = Math.abs(releaseYear - year) <= this.yearTolerance
+        // If no year provided, match on title only
+        const yearMatches = year === undefined || Math.abs(releaseYear - year) <= this.yearTolerance
         const titleMatches = this.normalizeTitle(movie.title) === this.normalizeTitle(title)
 
         return yearMatches && titleMatches
@@ -41,30 +42,32 @@ export class TMDBVerifier implements ITMDBVerifier {
         return {
           title: match.title,
           year: this.extractYear(match.release_date) ?? year,
-          tmdbId: match.id,
+          externalId: match.id,
           verified: true,
         }
       }
 
-      // If no exact title match, try to find just by year match
-      const yearMatch = searchResults.results.find((movie) => {
-        const releaseYear = this.extractYear(movie.release_date)
-        if (releaseYear === null) return false
-        return Math.abs(releaseYear - year) <= this.yearTolerance
-      })
+      // If no exact title match, try to find just by year match (if year provided)
+      if (year !== undefined) {
+        const yearMatch = searchResults.results.find((movie) => {
+          const releaseYear = this.extractYear(movie.release_date)
+          if (releaseYear === null) return false
+          return Math.abs(releaseYear - year) <= this.yearTolerance
+        })
 
-      if (yearMatch) {
-        return {
-          title: yearMatch.title,
-          year: this.extractYear(yearMatch.release_date) ?? year,
-          tmdbId: yearMatch.id,
-          verified: true,
+        if (yearMatch) {
+          return {
+            title: yearMatch.title,
+            year: this.extractYear(yearMatch.release_date) ?? year,
+            externalId: yearMatch.id,
+            verified: true,
+          }
         }
       }
 
       return this.createUnverifiedFilm(title, year)
     } catch (error) {
-      console.warn(`Failed to verify film "${title}" (${year}):`, error)
+      console.warn(`Failed to verify film "${title}"${year ? ` (${year})` : ''}:`, error)
       return this.createUnverifiedFilm(title, year)
     }
   }
@@ -72,9 +75,9 @@ export class TMDBVerifier implements ITMDBVerifier {
   /**
    * Verify multiple films in parallel
    * @param films - Array of films to verify
-   * @returns Array of VerifiedFilm results
+   * @returns Array of VerifiedItem results
    */
-  async verifyFilms(films: AIFilm[]): Promise<VerifiedFilm[]> {
+  async verifyFilms(films: AIItem[]): Promise<VerifiedItem[]> {
     if (films.length === 0) return []
 
     const verificationPromises = films.map((film) =>
@@ -82,6 +85,20 @@ export class TMDBVerifier implements ITMDBVerifier {
     )
 
     return Promise.all(verificationPromises)
+  }
+
+  /**
+   * IItemVerifier interface - alias for verifyFilm
+   */
+  verifyItem(title: string, year?: number): Promise<VerifiedItem> {
+    return this.verifyFilm(title, year)
+  }
+
+  /**
+   * IItemVerifier interface - alias for verifyFilms
+   */
+  verifyItems(items: AIItem[]): Promise<VerifiedItem[]> {
+    return this.verifyFilms(items)
   }
 
   /**
@@ -107,14 +124,14 @@ export class TMDBVerifier implements ITMDBVerifier {
   /**
    * Create an unverified film result
    * @param title - Film title
-   * @param year - Film year
-   * @returns VerifiedFilm with verified=false
+   * @param year - Film year (optional)
+   * @returns VerifiedItem with verified=false
    */
-  private createUnverifiedFilm(title: string, year: number): VerifiedFilm {
+  private createUnverifiedFilm(title: string, year?: number): VerifiedItem {
     return {
       title,
       year,
-      tmdbId: null,
+      externalId: null,
       verified: false,
     }
   }

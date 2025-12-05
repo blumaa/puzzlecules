@@ -17,6 +17,7 @@ const mockConnectionTypes: ConnectionType[] = [
     examples: ["Run", "Drive", "Crash", "Fly"],
     active: true,
     createdAt: new Date("2024-01-01"),
+    genre: "films",
   },
   {
     id: "2",
@@ -26,6 +27,7 @@ const mockConnectionTypes: ConnectionType[] = [
     examples: ["Inception", "Interstellar", "The Dark Knight", "Tenet"],
     active: true,
     createdAt: new Date("2024-01-02"),
+    genre: "films",
   },
   {
     id: "3",
@@ -35,6 +37,7 @@ const mockConnectionTypes: ConnectionType[] = [
     examples: ["Back to the Future", "The Terminator", "Looper"],
     active: true,
     createdAt: new Date("2024-01-03"),
+    genre: "films",
   },
   {
     id: "4",
@@ -44,6 +47,7 @@ const mockConnectionTypes: ConnectionType[] = [
     examples: ["Taxi Driver", "Spider-Man", "The Avengers"],
     active: false,
     createdAt: new Date("2024-01-04"),
+    genre: "films",
   },
 ];
 

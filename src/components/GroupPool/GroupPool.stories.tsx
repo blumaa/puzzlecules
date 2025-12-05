@@ -20,7 +20,7 @@ const mockGroups: StoredGroup[] = [
   {
     id: '1',
     createdAt: Date.now(),
-    films: mockFilms,
+    items: mockFilms,
     connection: 'Directed by Quentin Tarantino',
     connectionType: 'director',
     difficultyScore: 2500,
@@ -29,11 +29,12 @@ const mockGroups: StoredGroup[] = [
     status: 'approved',
     usageCount: 0,
     lastUsedAt: null,
+    genre: 'films',
   },
   {
     id: '2',
     createdAt: Date.now() - 86400000,
-    films: [
+    items: [
       { id: 5, title: 'The Godfather', year: 1972 },
       { id: 6, title: 'Goodfellas', year: 1990 },
       { id: 7, title: 'Casino', year: 1995 },
@@ -47,11 +48,12 @@ const mockGroups: StoredGroup[] = [
     status: 'approved',
     usageCount: 3,
     lastUsedAt: Date.now() - 172800000,
+    genre: 'films',
   },
   {
     id: '3',
     createdAt: Date.now() - 172800000,
-    films: [
+    items: [
       { id: 9, title: 'Inception', year: 2010 },
       { id: 10, title: 'The Matrix', year: 1999 },
       { id: 11, title: 'Tenet', year: 2020 },
@@ -65,6 +67,7 @@ const mockGroups: StoredGroup[] = [
     status: 'approved',
     usageCount: 1,
     lastUsedAt: null,
+    genre: 'films',
   },
 ];
 

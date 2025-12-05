@@ -7,7 +7,7 @@
 
 import type { SupabaseClient } from '@supabase/supabase-js';
 import type { Database } from '../types';
-import type { Film } from '../../../types';
+import type { Item, Genre } from '../../../types';
 import type {
   IGroupStorage,
   StoredGroup,
@@ -17,6 +17,8 @@ import type {
   GroupUpdate,
   DifficultyColor,
   DifficultyLevel,
+  GroupCountsByColor,
+  FreshestGroupSet,
 } from './IGroupStorage';
 
 type DbGroupRow = Database['public']['Tables']['connection_groups']['Row'];
@@ -39,7 +41,7 @@ export class SupabaseGroupStorage implements IGroupStorage {
     return {
       id: row.id,
       createdAt: new Date(row.created_at).getTime(),
-      films: row.films as unknown as Film[],
+      items: row.items as unknown as Item[],
       connection: row.connection,
       connectionType: row.connection_type,
       difficultyScore: row.difficulty_score,
@@ -49,15 +51,16 @@ export class SupabaseGroupStorage implements IGroupStorage {
       usageCount: row.usage_count,
       lastUsedAt: row.last_used_at ? new Date(row.last_used_at).getTime() : null,
       metadata: row.metadata as Record<string, unknown> | undefined,
+      genre: ((row as { genre?: string }).genre || 'films') as Genre,
     };
   }
 
   /**
    * Convert GroupInput to database insert format
    */
-  private groupToInsert(group: GroupInput): DbGroupInsert {
+  private groupToInsert(group: GroupInput): DbGroupInsert & { genre: string } {
     return {
-      films: group.films as unknown as DbGroupInsert['films'],
+      items: group.items as unknown as DbGroupInsert['items'],
       connection: group.connection,
       connection_type: group.connectionType,
       difficulty_score: group.difficultyScore,
@@ -65,6 +68,7 @@ export class SupabaseGroupStorage implements IGroupStorage {
       difficulty: group.difficulty,
       status: group.status,
       metadata: group.metadata as unknown as DbGroupInsert['metadata'],
+      genre: group.genre,
     };
   }
 
@@ -78,6 +82,10 @@ export class SupabaseGroupStorage implements IGroupStorage {
       .single();
 
     if (error) {
+      // Handle duplicate connection error (unique constraint violation)
+      if (error.code === '23505' || error.message.includes('duplicate')) {
+        throw new Error(`Group with connection "${group.connection}" already exists`);
+      }
       throw new Error(`Failed to save group: ${error.message}`);
     }
 
@@ -169,13 +177,33 @@ export class SupabaseGroupStorage implements IGroupStorage {
       query = query.eq('connection_type', filters.connectionType);
     }
 
+    if (filters?.genre) {
+      query = query.eq('genre', filters.genre);
+    }
+
+    // Exclude specific IDs
+    if (filters?.excludeIds && filters.excludeIds.length > 0) {
+      // Use NOT IN filter - need to filter each ID individually
+      for (const id of filters.excludeIds) {
+        query = query.neq('id', id);
+      }
+    }
+
     // Apply pagination
     const limit = filters?.limit ?? 50;
     const offset = filters?.offset ?? 0;
     query = query.range(offset, offset + limit - 1);
 
-    // Order by created_at descending (newest first)
-    query = query.order('created_at', { ascending: false });
+    // Apply sorting
+    if (filters?.sortByFreshness) {
+      // Sort by usage_count ASC (least used first), then by last_used_at ASC NULLS FIRST
+      query = query
+        .order('usage_count', { ascending: true })
+        .order('last_used_at', { ascending: true, nullsFirst: true });
+    } else {
+      // Default: order by created_at descending (newest first)
+      query = query.order('created_at', { ascending: false });
+    }
 
     const { data, error, count } = await query;
 
@@ -210,6 +238,10 @@ export class SupabaseGroupStorage implements IGroupStorage {
 
     if (updates.metadata !== undefined) {
       dbUpdate.metadata = updates.metadata as unknown as DbGroupUpdate['metadata'];
+    }
+
+    if (updates.genre !== undefined) {
+      (dbUpdate as { genre?: string }).genre = updates.genre;
     }
 
     const { data, error } = await this.supabase
@@ -251,5 +283,78 @@ export class SupabaseGroupStorage implements IGroupStorage {
     if (error) {
       throw new Error(`Failed to increment usage: ${error.message}`);
     }
+  }
+
+  async getGroupCountsByColor(genre: Genre = 'films'): Promise<GroupCountsByColor> {
+    const colors: DifficultyColor[] = ['yellow', 'green', 'blue', 'purple'];
+    const counts: GroupCountsByColor = {
+      yellow: 0,
+      green: 0,
+      blue: 0,
+      purple: 0,
+    };
+
+    // Query count for each color
+    for (const color of colors) {
+      const { count, error } = await this.supabase
+        .from('connection_groups')
+        .select('*', { count: 'exact', head: true })
+        .eq('status', 'approved')
+        .eq('color', color)
+        .eq('genre', genre);
+
+      if (error) {
+        throw new Error(`Failed to get group count for ${color}: ${error.message}`);
+      }
+
+      counts[color] = count ?? 0;
+    }
+
+    return counts;
+  }
+
+  async getFreshestGroupSet(
+    excludeIds: string[],
+    genre: Genre = 'films'
+  ): Promise<FreshestGroupSet> {
+    const colors: DifficultyColor[] = ['yellow', 'green', 'blue', 'purple'];
+    const result: FreshestGroupSet = {
+      yellow: null,
+      green: null,
+      blue: null,
+      purple: null,
+    };
+
+    // For each color, get the freshest approved group
+    for (const color of colors) {
+      let query = this.supabase
+        .from('connection_groups')
+        .select()
+        .eq('status', 'approved')
+        .eq('color', color)
+        .eq('genre', genre)
+        .order('usage_count', { ascending: true })
+        .order('last_used_at', { ascending: true, nullsFirst: true })
+        .limit(1);
+
+      // Exclude specific IDs
+      if (excludeIds.length > 0) {
+        for (const id of excludeIds) {
+          query = query.neq('id', id);
+        }
+      }
+
+      const { data, error } = await query;
+
+      if (error) {
+        throw new Error(`Failed to get freshest group for ${color}: ${error.message}`);
+      }
+
+      if (data && data.length > 0) {
+        result[color] = this.rowToStoredGroup(data[0]);
+      }
+    }
+
+    return result;
   }
 }

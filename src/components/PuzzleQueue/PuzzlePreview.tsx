@@ -45,7 +45,7 @@ export function PuzzlePreview({ selectedGroups, onSave, isSaving }: PuzzlePrevie
                 {selectedGroups[color].connection}
               </Text>
               <Text size="xs">
-                {selectedGroups[color].films.map((f) => f.title).join(' | ')}
+                {selectedGroups[color].items.map((item) => item.title).join(' | ')}
               </Text>
             </Box>
           </Box>
