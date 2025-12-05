@@ -185,13 +185,6 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       const unusedCounts: Record<DifficultyColor, number> = { yellow: 0, green: 0, blue: 0, purple: 0 };
 
       for (const color of COLORS) {
-        const { count } = await supabase
-          .from('connection_groups')
-          .select('id', { count: 'exact', head: true })
-          .eq('genre', genre)
-          .eq('status', 'approved')
-          .eq('color', color);
-
         // Get groups and filter out used ones
         const { data: groups } = await supabase
           .from('connection_groups')
