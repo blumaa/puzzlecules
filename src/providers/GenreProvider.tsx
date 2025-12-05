@@ -5,7 +5,7 @@
  * Persists selected genre to localStorage for session persistence.
  */
 
-import { ReactNode, useState, useEffect, useCallback } from 'react';
+import { ReactNode, useState, useCallback } from 'react';
 import type { Genre } from '../types';
 import { DEFAULT_GENRE, GENRES } from '../types';
 import { GenreContext } from './GenreContext';
@@ -63,30 +63,19 @@ interface GenreProviderProps {
  * ```
  */
 export function GenreProvider({ children, initialGenre }: GenreProviderProps) {
-  const [genre, setGenreState] = useState<Genre>(
-    initialGenre ?? DEFAULT_GENRE
-  );
-  const [isInitialized, setIsInitialized] = useState(false);
-
-  // Load from localStorage on mount (client-side only)
-  useEffect(() => {
-    if (!initialGenre) {
-      const stored = loadGenreFromStorage();
-      setGenreState(stored);
+  // Use lazy initialization to load from localStorage synchronously
+  const [genre, setGenreState] = useState<Genre>(() => {
+    if (initialGenre) {
+      return initialGenre;
     }
-    setIsInitialized(true);
-  }, [initialGenre]);
+    return loadGenreFromStorage();
+  });
 
   // Persist to localStorage when genre changes
   const setGenre = useCallback((newGenre: Genre) => {
     setGenreState(newGenre);
     saveGenreToStorage(newGenre);
   }, []);
-
-  // Avoid hydration mismatch by not rendering until initialized
-  if (!isInitialized) {
-    return null;
-  }
 
   return (
     <GenreContext.Provider value={{ genre, setGenre }}>

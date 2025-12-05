@@ -5,7 +5,7 @@
  * Displays a week view with puzzles scheduled on each day.
  */
 
-import { useState, useMemo, useEffect } from "react";
+import { useState, useMemo, useEffect, useRef } from "react";
 import { Box, Heading, Text, Button, Spinner } from "@mond-design-system/theme";
 import {
   usePuzzleList,
@@ -70,29 +70,51 @@ export function PuzzleQueue() {
     apiKey: anthropicApiKey,
   });
 
+  // Use refs to hold latest values without triggering re-renders
+  const fillWindowRef = useRef(fillWindow);
+  const toastRef = useRef(toast);
+  const configRef = useRef(pipelineStatus.config);
+
+  // Keep refs updated
+  useEffect(() => {
+    fillWindowRef.current = fillWindow;
+  }, [fillWindow]);
+
+  useEffect(() => {
+    toastRef.current = toast;
+  }, [toast]);
+
+  useEffect(() => {
+    configRef.current = pipelineStatus.config;
+  }, [pipelineStatus.config]);
+
   // Auto-fill when enabled and there are empty days
   useEffect(() => {
+    const config = configRef.current;
+    const fill = fillWindowRef.current;
+    const toastFns = toastRef.current;
+
     if (
-      pipelineStatus.config?.enabled &&
+      config?.enabled &&
       pipelineStatus.emptyDays > 0 &&
-      !fillWindow.isPending &&
+      !fill.isPending &&
       !pipelineStatus.isLoading
     ) {
       // Auto-trigger fill
-      fillWindow.mutate(pipelineStatus.config, {
+      fill.mutate(config, {
         onSuccess: (result) => {
           if (result.puzzlesCreated > 0) {
-            toast.showSuccess(`Auto-filled ${result.puzzlesCreated} puzzle(s)`);
+            toastFns.showSuccess(`Auto-filled ${result.puzzlesCreated} puzzle(s)`);
           }
           if (result.errors.length > 0) {
-            toast.showError(
+            toastFns.showError(
               'Some days could not be filled',
               result.errors[0].message
             );
           }
         },
         onError: (error) => {
-          toast.showError('Auto-fill failed', error.message);
+          toastFns.showError('Auto-fill failed', error.message);
         },
       });
     }

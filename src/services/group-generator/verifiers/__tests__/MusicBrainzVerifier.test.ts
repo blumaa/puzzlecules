@@ -7,14 +7,14 @@ import { MusicBrainzVerifier } from '../MusicBrainzVerifier'
 
 describe('MusicBrainzVerifier', () => {
   const verifier = new MusicBrainzVerifier()
-  const originalFetch = global.fetch
+  const originalFetch = globalThis.fetch
 
   beforeEach(() => {
     vi.clearAllMocks()
   })
 
   afterEach(() => {
-    global.fetch = originalFetch
+    globalThis.fetch = originalFetch
   })
 
   describe('verifyItem', () => {
@@ -29,7 +29,7 @@ describe('MusicBrainzVerifier', () => {
         ],
       }
 
-      global.fetch = vi.fn().mockResolvedValue({
+      globalThis.fetch = vi.fn().mockResolvedValue({
         ok: true,
         json: () => Promise.resolve(mockResponse),
       })
@@ -46,7 +46,7 @@ describe('MusicBrainzVerifier', () => {
         recordings: [],
       }
 
-      global.fetch = vi.fn().mockResolvedValue({
+      globalThis.fetch = vi.fn().mockResolvedValue({
         ok: true,
         json: () => Promise.resolve(mockResponse),
       })
@@ -60,7 +60,7 @@ describe('MusicBrainzVerifier', () => {
     })
 
     it('should return unverified when API fails', async () => {
-      global.fetch = vi.fn().mockResolvedValue({
+      globalThis.fetch = vi.fn().mockResolvedValue({
         ok: false,
         status: 500,
       })
@@ -72,7 +72,7 @@ describe('MusicBrainzVerifier', () => {
     })
 
     it('should return unverified when fetch throws', async () => {
-      global.fetch = vi.fn().mockRejectedValue(new Error('Network error'))
+      globalThis.fetch = vi.fn().mockRejectedValue(new Error('Network error'))
 
       const result = await verifier.verifyItem('Test Song', 2020)
 
@@ -91,7 +91,7 @@ describe('MusicBrainzVerifier', () => {
         ],
       }
 
-      global.fetch = vi.fn().mockResolvedValue({
+      globalThis.fetch = vi.fn().mockResolvedValue({
         ok: true,
         json: () => Promise.resolve(mockResponse),
       })
@@ -120,7 +120,7 @@ describe('MusicBrainzVerifier', () => {
         ],
       }
 
-      global.fetch = vi.fn().mockResolvedValue({
+      globalThis.fetch = vi.fn().mockResolvedValue({
         ok: true,
         json: () => Promise.resolve(mockResponse),
       })
@@ -134,7 +134,7 @@ describe('MusicBrainzVerifier', () => {
 
       expect(result).toHaveLength(2)
       // Fetch should be called for each item
-      expect(global.fetch).toHaveBeenCalledTimes(2)
+      expect(globalThis.fetch).toHaveBeenCalledTimes(2)
     })
   })
 })
