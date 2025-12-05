@@ -16,7 +16,7 @@
   "dependencies": {
     "@amplitude/analytics-browser": "^2.31.3",
     "@anthropic-ai/sdk": "^0.71.0",
-    "@mond-design-system/theme": "^2.9.9",
+    "@mond-design-system/theme": "^2.9.10",
     "@supabase/supabase-js": "^2.84.0",
     "@tanstack/react-query": "^5.90.10",
     "react": "^19.2.0",

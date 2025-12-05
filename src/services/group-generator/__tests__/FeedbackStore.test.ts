@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest'
-import type { GeneratedGroup, VerifiedFilm } from '../types'
+import type { GeneratedGroup, VerifiedItem } from '../types'
 
 // Use vi.hoisted to create mocks that are available during module hoisting
 const { mockFrom, mockSelect, mockInsert, mockEq, mockOrder, mockLimit } =
@@ -33,26 +33,26 @@ import { FeedbackStore } from '../FeedbackStore'
 describe('FeedbackStore', () => {
   let store: FeedbackStore
 
-  const mockVerifiedFilms: VerifiedFilm[] = [
-    { title: 'Run', year: 2020, tmdbId: 12345, verified: true },
-    { title: 'Drive', year: 2011, tmdbId: 67890, verified: true },
-    { title: 'Crash', year: 2004, tmdbId: 11111, verified: true },
-    { title: 'Taken', year: 2008, tmdbId: 22222, verified: true },
+  const mockVerifiedItems: VerifiedItem[] = [
+    { title: 'Run', year: 2020, externalId: 12345, verified: true },
+    { title: 'Drive', year: 2011, externalId: 67890, verified: true },
+    { title: 'Crash', year: 2004, externalId: 11111, verified: true },
+    { title: 'Taken', year: 2008, externalId: 22222, verified: true },
   ]
 
   const mockGeneratedGroup: GeneratedGroup = {
     id: '123e4567-e89b-12d3-a456-426614174000',
-    films: mockVerifiedFilms,
+    items: mockVerifiedItems,
     connection: 'Titles that are verbs',
     connectionType: 'word-game',
     explanation: 'Each film has a one-word title that is an action verb.',
-    allFilmsVerified: true,
+    allItemsVerified: true,
   }
 
   const mockFeedbackRow = {
     id: 'feedback-123',
     created_at: '2024-01-01T00:00:00Z',
-    films: [
+    items: [
       { title: 'Run', year: 2020 },
       { title: 'Drive', year: 2011 },
       { title: 'Crash', year: 2004 },
@@ -64,6 +64,7 @@ describe('FeedbackStore', () => {
     accepted: true,
     rejection_reason: null,
     generation_filters: null,
+    genre: 'films',
   }
 
   beforeEach(() => {
@@ -128,7 +129,7 @@ describe('FeedbackStore', () => {
       )
     })
 
-    it('should store films as JSON', async () => {
+    it('should store items as JSON', async () => {
       const mockInsertChain = {
         select: vi.fn().mockResolvedValue({ data: null, error: null }),
       }
@@ -138,7 +139,7 @@ describe('FeedbackStore', () => {
 
       expect(mockInsert).toHaveBeenCalledWith(
         expect.objectContaining({
-          films: expect.arrayContaining([
+          items: expect.arrayContaining([
             expect.objectContaining({ title: 'Run', year: 2020 }),
           ]),
         })
@@ -217,7 +218,7 @@ describe('FeedbackStore', () => {
         id: 'feedback-123',
         connection: 'Titles that are verbs',
         accepted: true,
-        films: expect.arrayContaining([
+        items: expect.arrayContaining([
           expect.objectContaining({ title: 'Run', year: 2020 }),
         ]),
       })

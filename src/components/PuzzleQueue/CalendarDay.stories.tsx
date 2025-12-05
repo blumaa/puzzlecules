@@ -10,6 +10,7 @@ const mockPuzzle: StoredPuzzle = {
   title: 'Classic Film Connections',
   groupIds: ['g1', 'g2', 'g3', 'g4'],
   status: 'pending',
+  genre: 'films',
 };
 
 const meta: Meta<typeof CalendarDay> = {

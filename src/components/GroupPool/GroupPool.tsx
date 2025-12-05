@@ -2,7 +2,7 @@
  * GroupPool Admin Page
  *
  * Displays and manages the connection groups pool.
- * Allows filtering by color and editing groups.
+ * Allows filtering by color, genre, and editing groups.
  */
 
 import { useState } from 'react';
@@ -17,6 +17,7 @@ import {
 import type { GroupListFilters, DifficultyColor } from '../../lib/supabase/storage';
 import { supabase } from '../../lib/supabase/client';
 import { useToast } from '../../providers/useToast';
+import { useGenre } from '../../providers';
 import { COLOR_TO_DIFFICULTY } from '../../constants/difficulty';
 import { GroupPoolHeader } from './GroupPoolHeader';
 import { GroupPoolFilter } from './GroupPoolFilter';
@@ -28,6 +29,7 @@ const storage = new SupabaseGroupStorage(supabase);
 
 export function GroupPool() {
   const toast = useToast();
+  const { genre } = useGenre();
 
   // Filter state
   const [colorFilter, setColorFilter] = useState<DifficultyColor | 'all'>('all');
@@ -41,6 +43,7 @@ export function GroupPool() {
   const filters: GroupListFilters = {
     limit: pageSize,
     offset: page * pageSize,
+    genre,
   };
 
   if (colorFilter !== 'all') {

@@ -10,20 +10,22 @@ import type {
   IFeedbackStore,
   GeneratedGroup,
   FeedbackRecord,
-  AIFilm,
+  AIItem,
+  Genre,
 } from './types'
 
 /** Database row type from Supabase */
 interface FeedbackRow {
   id: string
   created_at: string
-  films: Array<{ title: string; year: number }>
+  items: Array<{ title: string; year: number }>
   connection: string
   connection_type_id: string | null
   explanation: string | null
   accepted: boolean
   rejection_reason: string | null
   generation_filters: unknown | null
+  genre: string
 }
 
 export class FeedbackStore implements IFeedbackStore {
@@ -35,13 +37,13 @@ export class FeedbackStore implements IFeedbackStore {
     accepted: boolean,
     reason?: string
   ): Promise<void> {
-    const films: AIFilm[] = group.films.map((f) => ({
-      title: f.title,
-      year: f.year,
+    const items: AIItem[] = group.items.map((item) => ({
+      title: item.title,
+      year: item.year,
     }))
 
     const insertData = {
-      films,
+      items,
       connection: group.connection,
       explanation: group.explanation,
       accepted,
@@ -58,15 +60,21 @@ export class FeedbackStore implements IFeedbackStore {
   }
 
   /**
-   * Get accepted examples for prompt injection
+   * Get accepted examples for prompt injection, optionally filtered by genre
    */
-  async getAcceptedExamples(limit: number): Promise<FeedbackRecord[]> {
-    const { data, error } = await supabase
+  async getAcceptedExamples(limit: number, genre?: Genre): Promise<FeedbackRecord[]> {
+    let query = supabase
       .from('group_feedback')
       .select('*')
       .eq('accepted', true)
       .order('created_at', { ascending: false })
       .limit(limit)
+
+    if (genre) {
+      query = query.eq('genre', genre)
+    }
+
+    const { data, error } = await query
 
     if (error) {
       throw new Error(error.message)
@@ -76,15 +84,21 @@ export class FeedbackStore implements IFeedbackStore {
   }
 
   /**
-   * Get rejected examples for prompt injection
+   * Get rejected examples for prompt injection, optionally filtered by genre
    */
-  async getRejectedExamples(limit: number): Promise<FeedbackRecord[]> {
-    const { data, error } = await supabase
+  async getRejectedExamples(limit: number, genre?: Genre): Promise<FeedbackRecord[]> {
+    let query = supabase
       .from('group_feedback')
       .select('*')
       .eq('accepted', false)
       .order('created_at', { ascending: false })
       .limit(limit)
+
+    if (genre) {
+      query = query.eq('genre', genre)
+    }
+
+    const { data, error } = await query
 
     if (error) {
       throw new Error(error.message)
@@ -99,9 +113,9 @@ export class FeedbackStore implements IFeedbackStore {
   private mapRowToFeedbackRecord(row: FeedbackRow): FeedbackRecord {
     return {
       id: row.id,
-      films: row.films.map((f) => ({
-        title: f.title,
-        year: f.year,
+      items: row.items.map((item) => ({
+        title: item.title,
+        year: item.year,
       })),
       connection: row.connection,
       connectionType: '', // Not stored in database, use connection itself

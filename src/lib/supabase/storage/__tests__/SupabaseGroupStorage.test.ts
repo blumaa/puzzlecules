@@ -21,7 +21,7 @@ const createMockDbRow = (
 ): Database['public']['Tables']['connection_groups']['Row'] => ({
   id,
   created_at: '2024-01-01T00:00:00Z',
-  films: [
+  items: [
     createMockFilm(1, 'Film 1'),
     createMockFilm(2, 'Film 2'),
     createMockFilm(3, 'Film 3'),
@@ -40,7 +40,7 @@ const createMockDbRow = (
 
 // Mock group input
 const createMockGroupInput = (connection: string): GroupInput => ({
-  films: [
+  items: [
     createMockFilm(1, 'Film 1'),
     createMockFilm(2, 'Film 2'),
     createMockFilm(3, 'Film 3'),
@@ -52,6 +52,7 @@ const createMockGroupInput = (connection: string): GroupInput => ({
   color: 'green',
   difficulty: 'medium',
   status: 'pending',
+  genre: 'films',
 });
 
 // Create mock Supabase client

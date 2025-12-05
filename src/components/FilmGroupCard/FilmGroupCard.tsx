@@ -38,11 +38,11 @@ export function FilmGroupCard({ group }: FilmGroupCardProps) {
             rowGap: "1px",
           }}
         >
-          {group.films.map((film, index) => {
+          {group.items.map((item, index) => {
             return (
-              <Text key={film.id} responsive color="black.900" size="sm">
-                {film.title}
-                {index < group.films.length - 1 && ", "}
+              <Text key={item.id} responsive color="black.900" size="sm">
+                {item.title}
+                {index < group.items.length - 1 && ", "}
               </Text>
             );
           })}

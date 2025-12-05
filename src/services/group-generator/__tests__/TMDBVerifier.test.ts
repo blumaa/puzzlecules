@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest'
 import { TMDBVerifier } from '../TMDBVerifier'
-import type { AIFilm } from '../types'
+import type { AIItem } from '../types'
 
 // Mock the TMDB service
 vi.mock('../../tmdb', () => ({
@@ -44,7 +44,7 @@ describe('TMDBVerifier', () => {
       expect(result).toEqual({
         title: 'The Shawshank Redemption',
         year: 1994,
-        tmdbId: 278,
+        externalId: 278,
         verified: true,
       })
       expect(tmdbService.searchMovies).toHaveBeenCalledWith(
@@ -75,7 +75,7 @@ describe('TMDBVerifier', () => {
       const result = await verifier.verifyFilm('Some Movie', 1994)
 
       expect(result.verified).toBe(true)
-      expect(result.tmdbId).toBe(123)
+      expect(result.externalId).toBe(123)
     })
 
     it('should return unverified when no results found', async () => {
@@ -91,7 +91,7 @@ describe('TMDBVerifier', () => {
       expect(result).toEqual({
         title: 'Nonexistent Movie',
         year: 2020,
-        tmdbId: null,
+        externalId: null,
         verified: false,
       })
     })
@@ -118,7 +118,7 @@ describe('TMDBVerifier', () => {
       const result = await verifier.verifyFilm('Some Movie', 2020)
 
       expect(result.verified).toBe(false)
-      expect(result.tmdbId).toBe(null)
+      expect(result.externalId).toBe(null)
     })
 
     it('should find correct film from multiple results', async () => {
@@ -153,7 +153,7 @@ describe('TMDBVerifier', () => {
       const result = await verifier.verifyFilm('Dune', 2021)
 
       expect(result.verified).toBe(true)
-      expect(result.tmdbId).toBe(438631) // Should match the 2021 version
+      expect(result.externalId).toBe(438631) // Should match the 2021 version
     })
 
     it('should handle TMDB API errors gracefully', async () => {
@@ -166,7 +166,7 @@ describe('TMDBVerifier', () => {
       expect(result).toEqual({
         title: 'Some Movie',
         year: 2020,
-        tmdbId: null,
+        externalId: null,
         verified: false,
       })
     })
@@ -217,7 +217,7 @@ describe('TMDBVerifier', () => {
       const result = await verifier.verifyFilm('The Matrix', 1999)
 
       expect(result.verified).toBe(true)
-      expect(result.tmdbId).toBe(111)
+      expect(result.externalId).toBe(111)
     })
   })
 
@@ -259,18 +259,18 @@ describe('TMDBVerifier', () => {
           total_results: 1,
         })
 
-      const films: AIFilm[] = [
+      const items: AIItem[] = [
         { title: 'The Shawshank Redemption', year: 1994 },
         { title: 'The Godfather', year: 1972 },
       ]
 
-      const results = await verifier.verifyFilms(films)
+      const results = await verifier.verifyFilms(items)
 
       expect(results).toHaveLength(2)
       expect(results[0].verified).toBe(true)
-      expect(results[0].tmdbId).toBe(278)
+      expect(results[0].externalId).toBe(278)
       expect(results[1].verified).toBe(true)
-      expect(results[1].tmdbId).toBe(238)
+      expect(results[1].externalId).toBe(238)
     })
 
     it('should handle mixed verified and unverified films', async () => {
@@ -299,12 +299,12 @@ describe('TMDBVerifier', () => {
           total_results: 0,
         })
 
-      const films: AIFilm[] = [
+      const items: AIItem[] = [
         { title: 'The Shawshank Redemption', year: 1994 },
         { title: 'Fake Movie That Does Not Exist', year: 2020 },
       ]
 
-      const results = await verifier.verifyFilms(films)
+      const results = await verifier.verifyFilms(items)
 
       expect(results).toHaveLength(2)
       expect(results[0].verified).toBe(true)

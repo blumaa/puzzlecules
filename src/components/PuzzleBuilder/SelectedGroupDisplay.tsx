@@ -13,9 +13,9 @@ export function SelectedGroupDisplay({ group, onRemove }: SelectedGroupDisplayPr
         {group.connection}
       </Text>
       <Box display="flex" flexWrap="wrap" gap="xs">
-        {group.films.map((film) => (
-          <Text key={film.id} size="xs">
-            {film.title}
+        {group.items.map((item) => (
+          <Text key={item.id} size="xs">
+            {item.title}
           </Text>
         ))}
       </Box>

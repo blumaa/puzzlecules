@@ -11,6 +11,7 @@ const mockConnectionType: ConnectionType = {
   examples: ["Run", "Drive", "Crash", "Fly"],
   active: true,
   createdAt: new Date("2024-01-01"),
+  genre: "films",
 };
 
 const meta: Meta<typeof ConnectionTypeCard> = {

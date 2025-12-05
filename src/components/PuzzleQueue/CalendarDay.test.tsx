@@ -10,6 +10,7 @@ const mockPuzzle: StoredPuzzle = {
   title: 'Test Puzzle',
   groupIds: ['g1', 'g2', 'g3', 'g4'],
   status: 'pending',
+  genre: 'films',
 };
 
 describe('CalendarDay', () => {

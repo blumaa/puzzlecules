@@ -5,21 +5,26 @@
  * Following SOLID principles with clean interfaces for dependency injection.
  */
 
+import type { Genre } from '../../types';
+
+// Re-export Genre for convenience
+export type { Genre } from '../../types';
+
 // =============================================================================
-// Film Types
+// Item Types (genre-agnostic)
 // =============================================================================
 
-/** Film as returned by AI (before verification) */
-export interface AIFilm {
+/** Item as returned by AI (before verification) */
+export interface AIItem {
   title: string
-  year: number
+  year?: number
 }
 
-/** Film after TMDB verification */
-export interface VerifiedFilm {
+/** Item after verification (TMDB for films, MusicBrainz for music, etc.) */
+export interface VerifiedItem {
   title: string
-  year: number
-  tmdbId: number | null // null if not found in TMDB
+  year?: number
+  externalId: number | null // null if not found in external service
   verified: boolean
 }
 
@@ -48,6 +53,8 @@ export interface ConnectionType {
   examples?: string[] // Example connections
   active: boolean // Can be toggled on/off
   createdAt: Date
+  /** Genre/domain this connection type applies to */
+  genre: Genre
 }
 
 // =============================================================================
@@ -60,17 +67,17 @@ export type Difficulty = 'easy' | 'medium' | 'hard' | 'expert'
 /** Generated group from AI (before admin approval) */
 export interface GeneratedGroup {
   id: string
-  films: VerifiedFilm[]
+  items: VerifiedItem[]
   connection: string
   connectionType: string
   explanation: string
-  allFilmsVerified: boolean
+  allItemsVerified: boolean
 }
 
 /** Approved group (after admin sets difficulty) */
 export interface ApprovedGroup {
   id: string
-  films: VerifiedFilm[]
+  items: VerifiedItem[]
   connection: string
   connectionType: string
   difficulty: Difficulty
@@ -83,7 +90,7 @@ export interface ApprovedGroup {
 /** Feedback record for learning */
 export interface FeedbackRecord {
   id: string
-  films: AIFilm[]
+  items: AIItem[]
   connection: string
   connectionType: string
   accepted: boolean
@@ -100,6 +107,10 @@ export interface GenerationFilters {
   yearRange?: [number, number]
   connectionTypes?: string[] // Filter by specific connection type IDs
   excludeConnections?: string[] // Connections already used
+  /** Genre/domain for generation */
+  genre?: Genre
+  /** Target difficulty level for generated groups */
+  targetDifficulty?: Difficulty
 }
 
 // =============================================================================
@@ -108,9 +119,9 @@ export interface GenerationFilters {
 
 /** Connection Type Store - CRUD operations for connection types */
 export interface IConnectionTypeStore {
-  getAll(): Promise<ConnectionType[]>
-  getActive(): Promise<ConnectionType[]>
-  getByCategory(category: ConnectionCategory): Promise<ConnectionType[]>
+  getAll(genre?: Genre): Promise<ConnectionType[]>
+  getActive(genre?: Genre): Promise<ConnectionType[]>
+  getByCategory(category: ConnectionCategory, genre?: Genre): Promise<ConnectionType[]>
   create(
     type: Omit<ConnectionType, 'id' | 'createdAt'>
   ): Promise<ConnectionType>
@@ -129,26 +140,16 @@ export interface IFeedbackStore {
     accepted: boolean,
     reason?: string
   ): Promise<void>
-  getAcceptedExamples(limit: number): Promise<FeedbackRecord[]>
-  getRejectedExamples(limit: number): Promise<FeedbackRecord[]>
+  getAcceptedExamples(limit: number, genre?: Genre): Promise<FeedbackRecord[]>
+  getRejectedExamples(limit: number, genre?: Genre): Promise<FeedbackRecord[]>
 }
 
-/** TMDB Verifier - Validates films exist in TMDB */
-export interface ITMDBVerifier {
-  verifyFilm(title: string, year: number): Promise<VerifiedFilm>
-  verifyFilms(films: AIFilm[]): Promise<VerifiedFilm[]>
+/** Item Verifier - Validates items exist in external service (TMDB, MusicBrainz, etc.) */
+export interface IItemVerifier {
+  verifyItem(title: string, year?: number): Promise<VerifiedItem>
+  verifyItems(items: AIItem[]): Promise<VerifiedItem[]>
 }
 
-/** AI Group Generator - Generates groups using Claude */
-export interface IAIGroupGenerator {
-  generate(
-    filters: GenerationFilters,
-    connectionTypes: ConnectionType[],
-    count: number,
-    goodExamples: FeedbackRecord[],
-    badExamples: FeedbackRecord[]
-  ): Promise<GeneratedGroup[]>
-}
 
 // =============================================================================
 // API Types
@@ -161,18 +162,22 @@ export interface GenerateGroupsRequest {
   count: number
   goodExamples: FeedbackRecord[]
   badExamples: FeedbackRecord[]
+  /** Genre/domain for generation */
+  genre?: Genre
 }
 
 /** Response from generate-groups API route */
 export interface GenerateGroupsResponse {
   groups: GeneratedGroup[]
   tokensUsed?: number
+  /** Genre used for generation */
+  genre?: Genre
 }
 
 /** AI response format (what Claude returns) */
 export interface AIGroupResponse {
   groups: Array<{
-    films: AIFilm[]
+    items: AIItem[]
     connection: string
     connectionType: string
     explanation: string

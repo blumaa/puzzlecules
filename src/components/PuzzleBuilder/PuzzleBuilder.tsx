@@ -22,6 +22,7 @@ import type {
 } from "../../lib/supabase/storage";
 import { supabase } from "../../lib/supabase/client";
 import { useToast } from "../../providers/useToast";
+import { useGenre } from "../../providers";
 import { DifficultySlot } from "../PuzzleQueue/DifficultySlot";
 import { PuzzlePreview } from "../PuzzleQueue/PuzzlePreview";
 
@@ -34,6 +35,7 @@ const colors: DifficultyColor[] = ["yellow", "green", "blue", "purple"];
 
 export function PuzzleBuilder() {
   const toast = useToast();
+  const { genre } = useGenre();
 
   // Selected groups state (one per color)
   const [selectedGroups, setSelectedGroups] = useState<
@@ -51,21 +53,21 @@ export function PuzzleBuilder() {
   // Active color being selected
   const [activeColor, setActiveColor] = useState<DifficultyColor | null>(null);
 
-  // Query approved groups for each color
+  // Query approved groups for each color (filtered by genre)
   const yellowQuery = useGroupList(
-    { status: "approved", color: "yellow", limit: 100 },
+    { status: "approved", color: "yellow", limit: 100, genre },
     groupStorage,
   );
   const greenQuery = useGroupList(
-    { status: "approved", color: "green", limit: 100 },
+    { status: "approved", color: "green", limit: 100, genre },
     groupStorage,
   );
   const blueQuery = useGroupList(
-    { status: "approved", color: "blue", limit: 100 },
+    { status: "approved", color: "blue", limit: 100, genre },
     groupStorage,
   );
   const purpleQuery = useGroupList(
-    { status: "approved", color: "purple", limit: 100 },
+    { status: "approved", color: "purple", limit: 100, genre },
     groupStorage,
   );
 
@@ -105,6 +107,7 @@ export function PuzzleBuilder() {
     const puzzleInput: PuzzleInput = {
       groupIds,
       title: title.trim() || undefined,
+      genre,
     };
 
     try {

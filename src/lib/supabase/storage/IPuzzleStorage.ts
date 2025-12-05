@@ -5,8 +5,7 @@
  * Following Interface Segregation and Dependency Inversion principles.
  */
 
-import type { SavedPuzzle } from '../../puzzle-engine/types';
-import type { Group } from '../../../types';
+import type { SavedPuzzle, Group, Genre } from '../../../types';
 import type { Database } from '../types';
 
 /**
@@ -21,6 +20,8 @@ export interface PuzzleInput {
   groupIds: string[];
   title?: string | null;
   metadata?: Record<string, unknown>;
+  /** Genre/domain for the puzzle */
+  genre?: Genre;
 }
 
 /**
@@ -35,6 +36,8 @@ export interface StoredPuzzle {
   groupIds: string[];
   status: PuzzleStatus;
   metadata?: Record<string, unknown>;
+  /** Genre/domain of the puzzle */
+  genre: Genre;
   // Populated when fetched with groups
   groups?: Group[];
 }
@@ -48,6 +51,8 @@ export interface PuzzleListFilters {
   dateTo?: string;
   /** Filter for puzzles with no scheduled date (puzzleDate IS NULL) */
   unscheduled?: boolean;
+  /** Filter by genre/domain */
+  genre?: Genre;
   limit?: number;
   offset?: number;
 }
@@ -59,6 +64,10 @@ export interface PuzzleUpdate {
   status?: PuzzleStatus;
   puzzleDate?: string | null;
   metadata?: Record<string, unknown>;
+  /** Update the groups in a puzzle (for swapping) */
+  groupIds?: string[];
+  /** Update the puzzle title */
+  title?: string | null;
 }
 
 /**
@@ -95,14 +104,15 @@ export interface IPuzzleStorage {
   getPuzzle(id: string): Promise<StoredPuzzle | null>;
 
   /**
-   * Get the published puzzle for a specific date.
+   * Get the published puzzle for a specific date and genre.
    * This is the primary method for loading daily puzzles (public access).
    * Returns assembled SavedPuzzle with groups data fetched from connection_groups.
    *
    * @param date - Date string (YYYY-MM-DD format)
+   * @param genre - Genre/domain to filter by (defaults to 'films')
    * @returns Promise resolving to puzzle or null if no puzzle assigned to date
    */
-  getDailyPuzzle(date: string): Promise<SavedPuzzle | null>;
+  getDailyPuzzle(date: string, genre?: Genre): Promise<SavedPuzzle | null>;
 
   /**
    * List puzzles with optional filtering and pagination.
@@ -132,4 +142,52 @@ export interface IPuzzleStorage {
    * @returns Promise that resolves when deletion is complete
    */
   deletePuzzle(id: string): Promise<void>;
+
+  /**
+   * Get dates without scheduled puzzles within a date range.
+   * Used by pipeline to find days that need puzzles.
+   *
+   * @param startDate - Start date (YYYY-MM-DD format)
+   * @param endDate - End date (YYYY-MM-DD format)
+   * @param genre - Genre/domain to filter by
+   * @returns Promise resolving to array of date strings without puzzles
+   */
+  getEmptyDays(startDate: string, endDate: string, genre?: Genre): Promise<string[]>;
+
+  /**
+   * Check if a puzzle with the exact same group combination exists.
+   * Used to ensure puzzle uniqueness (order-independent).
+   *
+   * @param groupIds - Array of 4 group IDs to check
+   * @param genre - Genre/domain to filter by
+   * @returns Promise resolving to true if combination exists
+   */
+  checkPuzzleExists(groupIds: string[], genre?: Genre): Promise<boolean>;
+
+  /**
+   * Batch update multiple puzzles at once.
+   * Used for bulk operations like clearing selected dates.
+   *
+   * @param updates - Array of puzzle updates with IDs
+   * @returns Promise that resolves when all updates complete
+   */
+  batchUpdatePuzzles(updates: Array<{ id: string; updates: PuzzleUpdate }>): Promise<void>;
+
+  /**
+   * Batch delete multiple puzzles at once.
+   * Used for bulk delete operations.
+   *
+   * @param ids - Array of puzzle IDs to delete
+   * @returns Promise that resolves when all deletes complete
+   */
+  batchDeletePuzzles(ids: string[]): Promise<void>;
+
+  /**
+   * Get all group IDs that are used in existing puzzles.
+   * Used by pipeline to avoid reusing groups.
+   *
+   * @param genre - Genre/domain to filter by
+   * @returns Promise resolving to Set of group IDs that are already used
+   */
+  getUsedGroupIds(genre?: Genre): Promise<Set<string>>;
 }

@@ -7,7 +7,7 @@ const mockGroups: StoredGroup[] = [
   {
     id: 'group-1',
     createdAt: Date.now(),
-    films: [
+    items: [
       { id: 1, title: 'Pulp Fiction', year: 1994 },
       { id: 2, title: 'Kill Bill', year: 2003 },
       { id: 3, title: 'Reservoir Dogs', year: 1992 },
@@ -21,11 +21,12 @@ const mockGroups: StoredGroup[] = [
     status: 'approved',
     usageCount: 0,
     lastUsedAt: null,
+    genre: 'films',
   },
   {
     id: 'group-2',
     createdAt: Date.now(),
-    films: [
+    items: [
       { id: 5, title: 'Toy Story', year: 1995 },
       { id: 6, title: 'Finding Nemo', year: 2003 },
       { id: 7, title: 'The Incredibles', year: 2004 },
@@ -39,11 +40,12 @@ const mockGroups: StoredGroup[] = [
     status: 'approved',
     usageCount: 3,
     lastUsedAt: null,
+    genre: 'films',
   },
   {
     id: 'group-3',
     createdAt: Date.now(),
-    films: [
+    items: [
       { id: 9, title: 'The Godfather', year: 1972 },
       { id: 10, title: 'Goodfellas', year: 1990 },
       { id: 11, title: 'Casino', year: 1995 },
@@ -57,6 +59,7 @@ const mockGroups: StoredGroup[] = [
     status: 'approved',
     usageCount: 5,
     lastUsedAt: null,
+    genre: 'films',
   },
 ];
 

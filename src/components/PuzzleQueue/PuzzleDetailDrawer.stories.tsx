@@ -10,10 +10,11 @@ const mockPuzzle: StoredPuzzle = {
   title: 'Classic Film Connections',
   groupIds: ['g1', 'g2', 'g3', 'g4'],
   status: 'pending',
+  genre: 'films',
   groups: [
     {
       id: 'group-1',
-      films: [
+      items: [
         { id: 1, title: 'Pulp Fiction', year: 1994 },
         { id: 2, title: 'Kill Bill', year: 2003 },
         { id: 3, title: 'Reservoir Dogs', year: 1992 },
@@ -25,7 +26,7 @@ const mockPuzzle: StoredPuzzle = {
     },
     {
       id: 'group-2',
-      films: [
+      items: [
         { id: 5, title: 'The Godfather', year: 1972 },
         { id: 6, title: 'Goodfellas', year: 1990 },
         { id: 7, title: 'Casino', year: 1995 },
@@ -37,7 +38,7 @@ const mockPuzzle: StoredPuzzle = {
     },
     {
       id: 'group-3',
-      films: [
+      items: [
         { id: 9, title: 'Inception', year: 2010 },
         { id: 10, title: 'The Matrix', year: 1999 },
         { id: 11, title: 'Tenet', year: 2020 },
@@ -49,7 +50,7 @@ const mockPuzzle: StoredPuzzle = {
     },
     {
       id: 'group-4',
-      films: [
+      items: [
         { id: 13, title: 'Interstellar', year: 2014 },
         { id: 14, title: 'Arrival', year: 2016 },
         { id: 15, title: '2001: A Space Odyssey', year: 1968 },

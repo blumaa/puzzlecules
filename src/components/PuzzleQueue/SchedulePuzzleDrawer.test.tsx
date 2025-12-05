@@ -11,10 +11,11 @@ const mockPuzzles: StoredPuzzle[] = [
     title: 'Classic Film Connections',
     groupIds: ['g1', 'g2', 'g3', 'g4'],
     status: 'pending',
+    genre: 'films',
     groups: [
       {
         id: 'group-1',
-        films: [
+        items: [
           { id: 1, title: 'Pulp Fiction', year: 1994 },
           { id: 2, title: 'Kill Bill', year: 2003 },
           { id: 3, title: 'Reservoir Dogs', year: 1992 },
@@ -33,10 +34,11 @@ const mockPuzzles: StoredPuzzle[] = [
     title: 'Sci-Fi Masters',
     groupIds: ['g5', 'g6', 'g7', 'g8'],
     status: 'pending',
+    genre: 'films',
     groups: [
       {
         id: 'group-5',
-        films: [
+        items: [
           { id: 17, title: 'Blade Runner', year: 1982 },
           { id: 18, title: 'Alien', year: 1979 },
           { id: 19, title: 'The Martian', year: 2015 },

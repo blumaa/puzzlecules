@@ -155,6 +155,7 @@ describe('ConnectionTypeStore', () => {
         description: 'Films with titles that are action words',
         examples: ['Run', 'Drive'],
         active: true,
+        genre: 'films' as const,
       }
 
       const result = await store.create(input)
@@ -181,6 +182,7 @@ describe('ConnectionTypeStore', () => {
           category: 'word-game' as ConnectionCategory,
           description: 'Test description',
           active: true,
+          genre: 'films' as const,
         })
       ).rejects.toThrow('Insert failed')
     })

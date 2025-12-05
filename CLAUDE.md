@@ -1,3 +1,4 @@
 - always use bun and the scripts in package.json
 - you can always reference the mond-design-system at /Users/blumaa/code/mond-design-system
 - If you are unable to figure out how to engineer a component without using mds components, stop and tell me the problem and we'll talk about a solution.
+- you can always look at the consuming app: /Users/blumaa/code/filmecules while considering this project.

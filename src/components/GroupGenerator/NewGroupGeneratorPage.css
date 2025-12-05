@@ -36,7 +36,7 @@
   box-shadow: 0 0 0 3px rgba(49, 130, 206, 0.15);
 }
 
-.film-chip {
+.item-chip {
   display: inline-flex;
   align-items: center;
   gap: 4px;
@@ -45,17 +45,17 @@
   font-size: 13px;
 }
 
-.film-chip.verified {
+.item-chip.verified {
   background-color: var(--color-success-bg, #c6f6d5);
   border: 1px solid var(--color-success, #38a169);
 }
 
-.film-chip.unverified {
+.item-chip.unverified {
   background-color: var(--color-warning-bg, #feebc8);
   border: 1px solid var(--color-warning, #dd6b20);
 }
 
-.tmdb-badge {
+.verified-badge {
   font-size: 10px;
   background-color: var(--color-primary, #3182ce);
   color: white;
@@ -72,10 +72,10 @@
   border-color: var(--color-border-dark, #4a5568);
 }
 
-[data-theme="dark"] .film-chip.verified {
+[data-theme="dark"] .item-chip.verified {
   background-color: rgba(56, 161, 105, 0.2);
 }
 
-[data-theme="dark"] .film-chip.unverified {
+[data-theme="dark"] .item-chip.unverified {
   background-color: rgba(221, 107, 32, 0.2);
 }

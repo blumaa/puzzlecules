@@ -7,8 +7,8 @@
 
 // Types
 export type {
-  AIFilm,
-  VerifiedFilm,
+  AIItem,
+  VerifiedItem,
   ConnectionCategory,
   ConnectionType,
   Difficulty,
@@ -18,8 +18,7 @@ export type {
   GenerationFilters,
   IConnectionTypeStore,
   IFeedbackStore,
-  ITMDBVerifier,
-  IAIGroupGenerator,
+  IItemVerifier,
   GenerateGroupsRequest,
   GenerateGroupsResponse,
   AIGroupResponse,
@@ -29,4 +28,9 @@ export type {
 export { ConnectionTypeStore } from './ConnectionTypeStore'
 export { FeedbackStore } from './FeedbackStore'
 export { TMDBVerifier } from './TMDBVerifier'
-export { AIGroupGenerator } from './AIGroupGenerator'
+
+// Domain config
+export { getDomainConfig, DOMAIN_CONFIGS, type DomainConfig } from './domainConfig'
+
+// Verifiers
+export { createVerifier } from './verifiers'

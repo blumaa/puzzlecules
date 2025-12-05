@@ -6,7 +6,7 @@ import type { StoredGroup } from '../../lib/supabase/storage';
 const mockGroup: StoredGroup = {
   id: '1',
   createdAt: Date.now(),
-  films: [
+  items: [
     { id: 1, title: 'Pulp Fiction', year: 1994 },
     { id: 2, title: 'Kill Bill', year: 2003 },
     { id: 3, title: 'Reservoir Dogs', year: 1992 },
@@ -20,6 +20,7 @@ const mockGroup: StoredGroup = {
   status: 'approved',
   usageCount: 0,
   lastUsedAt: null,
+  genre: 'films',
 };
 
 const meta: Meta<typeof GroupPoolCard> = {
@@ -99,7 +100,7 @@ export const BlueGroup: Story = {
       color: 'blue',
       difficulty: 'hard',
       connection: 'Mind-bending narratives',
-      films: [
+      items: [
         { id: 9, title: 'Inception', year: 2010 },
         { id: 10, title: 'The Matrix', year: 1999 },
         { id: 11, title: 'Tenet', year: 2020 },
@@ -120,7 +121,7 @@ export const PurpleGroup: Story = {
       color: 'purple',
       difficulty: 'hardest',
       connection: 'Films about human connection across space/time',
-      films: [
+      items: [
         { id: 13, title: 'Interstellar', year: 2014 },
         { id: 14, title: 'Arrival', year: 2016 },
         { id: 15, title: '2001: A Space Odyssey', year: 1968 },

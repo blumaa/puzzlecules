@@ -5,6 +5,7 @@ import { ToastProvider } from "./providers/ToastProvider";
 import { ThemeContextProvider } from "./providers/ThemeContext";
 import { useThemeContext } from "./providers/useThemeContext";
 import { AuthProvider } from "./providers/AuthProvider";
+import { GenreProvider } from "./providers";
 import { LoginPage } from "./components/Login/LoginPage";
 import { RequireAdmin } from "./components/Layout/RequireAdmin";
 import { Layout } from "./components/Layout/Layout";
@@ -30,8 +31,9 @@ function ThemedApp() {
 
   return (
     <ThemeProvider colorScheme={theme}>
-      <ToastProvider>
-        <BrowserRouter>
+      <GenreProvider>
+        <ToastProvider>
+          <BrowserRouter>
           <div
             style={{
               display: "flex",
@@ -62,8 +64,9 @@ function ThemedApp() {
             </Routes>
             <Footer />
           </div>
-        </BrowserRouter>
-      </ToastProvider>
+          </BrowserRouter>
+        </ToastProvider>
+      </GenreProvider>
     </ThemeProvider>
   );
 }
