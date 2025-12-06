@@ -15,6 +15,23 @@ vi.mock('../../lib/supabase/storage/usePuzzleStorage', () => ({
     mutate: vi.fn(),
     isPending: false,
   })),
+  useDeletePuzzle: vi.fn(() => ({
+    mutate: vi.fn(),
+    isPending: false,
+  })),
+  useBatchUpdatePuzzles: vi.fn(() => ({
+    mutate: vi.fn(),
+    isPending: false,
+  })),
+}));
+
+// Mock the group storage hooks
+vi.mock('../../lib/supabase/storage/useGroupStorage', () => ({
+  useGroupList: vi.fn(() => ({
+    data: { groups: [], total: 0 },
+    isLoading: false,
+    error: null,
+  })),
 }));
 
 // Mock the supabase client and storage

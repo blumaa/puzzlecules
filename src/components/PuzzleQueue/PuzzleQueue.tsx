@@ -5,21 +5,27 @@
  * Displays a week view with puzzles scheduled on each day.
  */
 
-import { useState, useMemo, useEffect, useRef } from "react";
+import { useState, useMemo } from "react";
 import { Box, Heading, Text, Button, Spinner } from "@mond-design-system/theme";
 import {
   usePuzzleList,
   useUpdatePuzzle,
+  useDeletePuzzle,
+  useBatchUpdatePuzzles,
 } from "../../lib/supabase/storage/usePuzzleStorage";
+import { useGroupList } from "../../lib/supabase/storage/useGroupStorage";
 import { SupabaseStorage } from "../../lib/supabase/storage/SupabaseStorage";
 import { SupabaseGroupStorage } from "../../lib/supabase/storage/SupabaseGroupStorage";
 import { supabase } from "../../lib/supabase/client";
 import { useToast } from "../../providers/useToast";
 import { useGenre } from "../../providers";
 import type { StoredPuzzle } from "../../lib/supabase/storage/IPuzzleStorage";
+import type { DifficultyColor } from "../../lib/supabase/storage/IGroupStorage";
+import type { Group } from "../../types";
 import { CalendarDay } from "./CalendarDay";
 import { PuzzleDetailDrawer } from "./PuzzleDetailDrawer";
 import { SchedulePuzzleDrawer } from "./SchedulePuzzleDrawer";
+import { GroupSwapDrawer } from "./GroupSwapDrawer";
 import { PipelineControls } from "./PipelineControls";
 import {
   usePipelineStatus,
@@ -52,6 +58,13 @@ export function PuzzleQueue() {
     getWeekStart(new Date()),
   );
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
+  const [isSelectMode, setIsSelectMode] = useState(false);
+  const [selectedDates, setSelectedDates] = useState<Set<string>>(new Set());
+  // State for group swap drawer
+  const [swapGroupInfo, setSwapGroupInfo] = useState<{
+    index: number;
+    group: Group;
+  } | null>(null);
   const toast = useToast();
   const { genre } = useGenre();
 
@@ -70,59 +83,9 @@ export function PuzzleQueue() {
     apiKey: anthropicApiKey,
   });
 
-  // Use refs to hold latest values without triggering re-renders
-  const fillWindowRef = useRef(fillWindow);
-  const toastRef = useRef(toast);
-  const configRef = useRef(pipelineStatus.config);
-
-  // Keep refs updated
-  useEffect(() => {
-    fillWindowRef.current = fillWindow;
-  }, [fillWindow]);
-
-  useEffect(() => {
-    toastRef.current = toast;
-  }, [toast]);
-
-  useEffect(() => {
-    configRef.current = pipelineStatus.config;
-  }, [pipelineStatus.config]);
-
-  // Auto-fill when enabled and there are empty days
-  useEffect(() => {
-    const config = configRef.current;
-    const fill = fillWindowRef.current;
-    const toastFns = toastRef.current;
-
-    if (
-      config?.enabled &&
-      pipelineStatus.emptyDays > 0 &&
-      !fill.isPending &&
-      !pipelineStatus.isLoading
-    ) {
-      // Auto-trigger fill
-      fill.mutate(config, {
-        onSuccess: (result) => {
-          if (result.puzzlesCreated > 0) {
-            toastFns.showSuccess(`Auto-filled ${result.puzzlesCreated} puzzle(s)`);
-          }
-          if (result.errors.length > 0) {
-            toastFns.showError(
-              'Some days could not be filled',
-              result.errors[0].message
-            );
-          }
-        },
-        onError: (error) => {
-          toastFns.showError('Auto-fill failed', error.message);
-        },
-      });
-    }
-  }, [
-    pipelineStatus.config?.enabled,
-    pipelineStatus.emptyDays,
-    pipelineStatus.isLoading,
-  ]);
+  // Note: Auto-fill is handled by the cron job when enabled.
+  // The toggle only changes the enabled state in the database.
+  // Use "Fill Now" button for manual fill on this page.
 
   // Handler for toggle
   const handleToggleEnabled = () => {
@@ -191,8 +154,14 @@ export function PuzzleQueue() {
     storage,
   );
 
-  // Mutation for scheduling
+  // Mutation for scheduling and updates
   const updateMutation = useUpdatePuzzle(storage);
+
+  // Mutation for deleting puzzles
+  const deleteMutation = useDeletePuzzle(storage);
+
+  // Batch mutation for selection mode (unschedule)
+  const batchUpdateMutation = useBatchUpdatePuzzles(storage);
 
   // Build map of puzzles by date
   const puzzlesByDate = useMemo(() => {
@@ -209,6 +178,21 @@ export function PuzzleQueue() {
 
   // Determine which drawer to show
   const selectedPuzzle = selectedDate ? puzzlesByDate.get(selectedDate) : null;
+
+  // Fetch available groups for swap (same color, approved)
+  const swapColor = swapGroupInfo?.group?.color as DifficultyColor | undefined;
+  const currentPuzzleGroupIds = selectedPuzzle?.groups?.map(g => g.id).filter(Boolean) as string[] ?? [];
+  const { data: availableGroupsData, isLoading: isLoadingSwapGroups } = useGroupList(
+    swapColor ? {
+      status: 'approved',
+      color: swapColor,
+      excludeIds: currentPuzzleGroupIds,
+      sortByFreshness: true,
+      genre,
+    } : undefined,
+    groupStorage,
+    { enabled: swapGroupInfo !== null }
+  );
   const showDetailDrawer =
     selectedDate !== null && selectedPuzzle !== undefined;
   const showScheduleDrawer =
@@ -253,6 +237,126 @@ export function PuzzleQueue() {
     );
   };
 
+  // Selection mode handlers
+  const handleToggleSelectMode = () => {
+    setIsSelectMode(!isSelectMode);
+    if (isSelectMode) {
+      // Clear selections when exiting select mode
+      setSelectedDates(new Set());
+    }
+  };
+
+  const handleToggleDateSelection = (dateStr: string) => {
+    setSelectedDates((prev) => {
+      const next = new Set(prev);
+      if (next.has(dateStr)) {
+        next.delete(dateStr);
+      } else {
+        next.add(dateStr);
+      }
+      return next;
+    });
+  };
+
+  const handleClearSelected = () => {
+    // Get puzzle IDs for selected dates
+    const puzzleUpdates = Array.from(selectedDates)
+      .map((date) => puzzlesByDate.get(date))
+      .filter((puzzle): puzzle is StoredPuzzle => puzzle !== undefined)
+      .map((puzzle) => ({
+        id: puzzle.id,
+        updates: { puzzleDate: null, status: 'approved' as const },
+      }));
+
+    if (puzzleUpdates.length === 0) {
+      toast.showError("No puzzles selected");
+      return;
+    }
+
+    batchUpdateMutation.mutate(puzzleUpdates, {
+      onSuccess: () => {
+        toast.showSuccess(`Unscheduled ${puzzleUpdates.length} puzzle(s)`);
+        setSelectedDates(new Set());
+        setIsSelectMode(false);
+      },
+      onError: (err) => {
+        toast.showError("Failed to unschedule puzzles", err.message);
+      },
+    });
+  };
+
+  // Puzzle detail handlers
+  const handlePuzzleUpdate = (puzzleId: string, updates: { title?: string; groupIds?: string[] }) => {
+    updateMutation.mutate(
+      { id: puzzleId, updates },
+      {
+        onSuccess: () => {
+          toast.showSuccess("Puzzle updated");
+        },
+        onError: (err) => {
+          toast.showError("Failed to update puzzle", err.message);
+        },
+      },
+    );
+  };
+
+  const handlePuzzleUnschedule = (puzzleId: string) => {
+    updateMutation.mutate(
+      { id: puzzleId, updates: { puzzleDate: null, status: 'approved' } },
+      {
+        onSuccess: () => {
+          toast.showSuccess("Puzzle unscheduled");
+          setSelectedDate(null);
+        },
+        onError: (err) => {
+          toast.showError("Failed to unschedule puzzle", err.message);
+        },
+      },
+    );
+  };
+
+  const handlePuzzleDelete = (puzzleId: string) => {
+    deleteMutation.mutate(puzzleId, {
+      onSuccess: () => {
+        toast.showSuccess("Puzzle deleted");
+        setSelectedDate(null);
+      },
+      onError: (err) => {
+        toast.showError("Failed to delete puzzle", err.message);
+      },
+    });
+  };
+
+  const handleSwapGroup = (groupIndex: number, currentGroup: Group) => {
+    setSwapGroupInfo({ index: groupIndex, group: currentGroup });
+  };
+
+  const handleCloseSwapDrawer = () => {
+    setSwapGroupInfo(null);
+  };
+
+  const handleSelectSwapGroup = (newGroup: { id: string }) => {
+    if (!selectedPuzzle || swapGroupInfo === null) return;
+
+    // Build new group IDs array with the swapped group
+    const newGroupIds = selectedPuzzle.groups?.map((g, idx) =>
+      idx === swapGroupInfo.index ? newGroup.id : g.id
+    ).filter(Boolean) as string[];
+
+    updateMutation.mutate(
+      { id: selectedPuzzle.id, updates: { groupIds: newGroupIds } },
+      {
+        onSuccess: () => {
+          toast.showSuccess("Group swapped");
+          setSwapGroupInfo(null);
+        },
+        onError: (err) => {
+          toast.showError("Failed to swap group", err.message);
+        },
+      },
+    );
+  };
+
   // Get today's date for comparison
   const today = formatDateForStorage(new Date());
 
@@ -281,12 +385,20 @@ export function PuzzleQueue() {
           />
         )}
 
-        <Box
-          display="flex"
-          justifyContent="center"
-          alignItems="center"
-        >
-          {/* Week Navigation */}
+        {/* Week Navigation and Selection Mode Controls */}
+        <Box display="flex" justifyContent="space-between" alignItems="center">
+          {/* Left: Select Mode Toggle */}
+          <Box>
+            <Button
+              variant={isSelectMode ? "ghost" : "outline"}
+              size="sm"
+              onClick={handleToggleSelectMode}
+            >
+              {isSelectMode ? "Cancel" : "Select"}
+            </Button>
+          </Box>
+
+          {/* Center: Week Navigation */}
           <Box display="flex" alignItems="center" gap="md">
             <Button
               variant="outline"
@@ -305,6 +417,20 @@ export function PuzzleQueue() {
             >
               Next →
             </Button>
+          </Box>
+
+          {/* Right: Selection Actions */}
+          <Box display="flex" gap="sm">
+            {isSelectMode && selectedDates.size > 0 && (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleClearSelected}
+                disabled={batchUpdateMutation.isPending}
+              >
+                Unschedule ({selectedDates.size})
+              </Button>
+            )}
           </Box>
         </Box>
 
@@ -331,6 +457,9 @@ export function PuzzleQueue() {
                   isToday={isToday}
                   isPast={isPast}
                   onClick={() => handleDayClick(date)}
+                  isSelectMode={isSelectMode}
+                  isSelected={selectedDates.has(dateStr)}
+                  onSelect={() => handleToggleDateSelection(dateStr)}
                 />
               );
             })}
@@ -344,6 +473,11 @@ export function PuzzleQueue() {
           onClose={handleCloseDrawer}
           selectedDate={selectedDate!}
           puzzle={selectedPuzzle}
+          onUpdate={handlePuzzleUpdate}
+          onUnschedule={handlePuzzleUnschedule}
+          onDelete={handlePuzzleDelete}
+          isUpdating={updateMutation.isPending || deleteMutation.isPending}
+          onSwapGroup={handleSwapGroup}
         />
       )}
 
@@ -356,6 +490,19 @@ export function PuzzleQueue() {
           availablePuzzles={availableData?.puzzles ?? []}
           onSchedule={handleSchedule}
           isScheduling={updateMutation.isPending}
+        />
+      )}
+
+      {/* Group Swap Drawer - for swapping groups in a puzzle */}
+      {swapGroupInfo && (
+        <GroupSwapDrawer
+          isOpen={true}
+          onClose={handleCloseSwapDrawer}
+          currentGroup={swapGroupInfo.group}
+          availableGroups={availableGroupsData?.groups ?? []}
+          isLoading={isLoadingSwapGroups}
+          onSelectGroup={handleSelectSwapGroup}
+          isSwapping={updateMutation.isPending}
         />
       )}
     </>
