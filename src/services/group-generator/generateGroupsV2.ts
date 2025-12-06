@@ -245,8 +245,15 @@ export async function generateGroupsV2Browser(
   })
 
   if (!response.ok) {
-    const errorData = await response.json()
-    throw new Error(errorData.error || 'Failed to generate groups')
+    // Try to parse JSON error, fall back to text
+    const contentType = response.headers.get('content-type')
+    if (contentType?.includes('application/json')) {
+      const errorData = await response.json()
+      throw new Error(errorData.error || 'Failed to generate groups')
+    } else {
+      const errorText = await response.text()
+      throw new Error(errorText || 'Failed to generate groups')
+    }
   }
 
   const data = await response.json()
