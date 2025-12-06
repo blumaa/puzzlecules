@@ -24,7 +24,7 @@ export interface AIItem {
 export interface VerifiedItem {
   title: string
   year?: number
-  externalId: number | null // null if not found in external service
+  externalId: number | string | null // null if not found in external service (TMDB uses number, MusicBrainz uses string UUID)
   verified: boolean
 }
 

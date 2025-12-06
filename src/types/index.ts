@@ -18,7 +18,7 @@ export const DEFAULT_GENRE: Genre = 'films';
  * Domain-specific properties are optional.
  */
 export interface Item {
-  id: number;
+  id: number | string; // TMDB uses number, MusicBrainz uses string UUID
   title: string;
   year?: number;
   director?: string;

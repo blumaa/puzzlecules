@@ -61,7 +61,7 @@ export class MusicBrainzVerifier implements IItemVerifier {
         return {
           title: title,
           year: this.extractYear(match['first-release-date']),
-          externalId: null, // MusicBrainz IDs are strings, not stored
+          externalId: match.id, // MusicBrainz UUID
           verified: true,
         }
       }

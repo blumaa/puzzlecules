@@ -202,8 +202,8 @@ export class PipelineGenerator {
           group.items.map((i) => ({ title: i.title, year: i.year }))
         );
 
-        // Check if all items are verified
-        const allVerified = verifiedItems.every((item) => item.verified && item.externalId !== null);
+        // Check if all items are verified (externalId may be null for some verifiers like MusicBrainz)
+        const allVerified = verifiedItems.every((item) => item.verified);
 
         if (!allVerified) {
           errors.push(`Group "${group.connection}" has unverified items, skipping`);
