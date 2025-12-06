@@ -6,6 +6,7 @@
  */
 
 import { useState, useMemo } from "react";
+import { useQueryClient } from "@tanstack/react-query";
 import { Box, Heading, Text, Button, Spinner } from "@mond-design-system/theme";
 import {
   usePuzzleList,
@@ -67,6 +68,14 @@ export function PuzzleQueue() {
   } | null>(null);
   const toast = useToast();
   const { genre } = useGenre();
+  const queryClient = useQueryClient();
+
+  // Helper to invalidate pipeline status queries
+  const invalidatePipelineStatus = () => {
+    queryClient.invalidateQueries({ queryKey: ['pipeline', 'scheduledCount', genre] });
+    queryClient.invalidateQueries({ queryKey: ['pipeline', 'poolHealth', genre] });
+    queryClient.invalidateQueries({ queryKey: ['pipeline', 'emptyDates', genre] });
+  };
 
   // Create verifier based on genre
   const itemVerifier = useMemo(() => createVerifier(genre), [genre]);
@@ -109,21 +118,44 @@ export function PuzzleQueue() {
     };
     fillWindow.mutate(config, {
       onSuccess: (result) => {
-        // Build success message with AI generation info
-        let message = '';
-        if (result.aiGenerationTriggered && result.groupsGenerated > 0) {
-          message += `Generated ${result.groupsGenerated} new group(s). `;
+        // Build detailed summary
+        const parts: string[] = [];
+
+        // AI generation stats
+        if (result.aiGenerationTriggered) {
+          const colorStats = Object.entries(result.groupsByColor)
+            .filter(([, stats]) => stats.generated > 0)
+            .map(([color, stats]) => `${color}: ${stats.saved}/${stats.generated}`)
+            .join(', ');
+          if (colorStats) {
+            parts.push(`Groups saved: ${colorStats}`);
+          }
+          if (result.groupsSaved < result.groupsGenerated) {
+            parts.push(`${result.groupsGenerated - result.groupsSaved} group(s) failed`);
+          }
         }
+
+        // Puzzle creation stats
         if (result.puzzlesCreated > 0) {
-          message += `Filled ${result.puzzlesCreated} puzzle(s).`;
-          toast.showSuccess(message);
-        } else if (result.emptyDaysRemaining > 0) {
-          toast.showError(
-            'No puzzles created',
-            result.errors[0]?.message ?? 'Insufficient groups'
-          );
-        } else {
+          parts.push(`${result.puzzlesCreated} puzzle(s) created`);
+        }
+        if (result.emptyDaysRemaining > 0) {
+          parts.push(`${result.emptyDaysRemaining} day(s) still empty`);
+        }
+
+        // Error summary
+        if (result.errors.length > 0) {
+          parts.push(`${result.errors.length} error(s)`);
+        }
+
+        // Show result
+        const summary = parts.join(' | ');
+        if (result.puzzlesCreated > 0 || result.groupsSaved > 0) {
+          toast.showSuccess('Pipeline complete', summary);
+        } else if (result.emptyDaysRemaining === 0 && result.puzzlesCreated === 0) {
           toast.showSuccess('All days already scheduled');
+        } else {
+          toast.showError('Pipeline incomplete', summary || result.errors[0]?.message || 'Unknown error');
         }
       },
       onError: (error) => {
@@ -278,6 +310,7 @@ export function PuzzleQueue() {
         toast.showSuccess(`Unscheduled ${puzzleUpdates.length} puzzle(s)`);
         setSelectedDates(new Set());
         setIsSelectMode(false);
+        invalidatePipelineStatus();
       },
       onError: (err) => {
         toast.showError("Failed to unschedule puzzles", err.message);
@@ -307,6 +340,7 @@ export function PuzzleQueue() {
         onSuccess: () => {
           toast.showSuccess("Puzzle unscheduled");
           setSelectedDate(null);
+          invalidatePipelineStatus();
         },
         onError: (err) => {
           toast.showError("Failed to unschedule puzzle", err.message);
@@ -320,6 +354,7 @@ export function PuzzleQueue() {
       onSuccess: () => {
         toast.showSuccess("Puzzle deleted");
         setSelectedDate(null);
+        invalidatePipelineStatus();
       },
       onError: (err) => {
         toast.showError("Failed to delete puzzle", err.message);

@@ -71,7 +71,6 @@ describe('PipelineService', () => {
     mockPuzzleStorage = createMockPuzzleStorage();
     mockGroupStorage = createMockGroupStorage();
     service = new PipelineService(mockPuzzleStorage, mockGroupStorage);
-    vi.clearAllMocks();
   });
 
   describe('getDefaultConfig', () => {

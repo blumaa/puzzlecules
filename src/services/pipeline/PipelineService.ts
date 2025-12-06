@@ -138,6 +138,13 @@ export class PipelineService {
       emptyDaysRemaining: 0,
       aiGenerationTriggered: false,
       groupsGenerated: 0,
+      groupsSaved: 0,
+      groupsByColor: {
+        yellow: { generated: 0, saved: 0 },
+        green: { generated: 0, saved: 0 },
+        blue: { generated: 0, saved: 0 },
+        purple: { generated: 0, saved: 0 },
+      },
       errors: [],
     };
 
@@ -180,7 +187,19 @@ export class PipelineService {
           onStageChange: reportStage,
         });
 
-        result.groupsGenerated = genResult.groupsSaved;
+        result.groupsGenerated = genResult.groupsGenerated;
+        result.groupsSaved = genResult.groupsSaved;
+
+        // Copy per-color stats
+        for (const color of ['yellow', 'green', 'blue', 'purple'] as const) {
+          // Generated = requested for that color, Saved = what we got
+          const savedCount = genResult.byColor[color] ?? 0;
+          const requestedForColor = colorsNeeded.includes(color) ? groupsPerColor : 0;
+          result.groupsByColor[color] = {
+            generated: requestedForColor,
+            saved: savedCount,
+          };
+        }
 
         if (genResult.errors.length > 0) {
           result.errors.push(
