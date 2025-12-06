@@ -5,7 +5,6 @@
 import { describe, it, expect } from 'vitest'
 import { createVerifier } from '../VerifierFactory'
 import { TMDBVerifier } from '../../TMDBVerifier'
-import { MusicBrainzVerifier } from '../MusicBrainzVerifier'
 import { NoOpVerifier } from '../NoOpVerifier'
 
 describe('createVerifier', () => {
