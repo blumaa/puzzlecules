@@ -33,7 +33,7 @@ export const DOMAIN_CONFIGS: Record<Genre, DomainConfig> = {
     itemName: 'song',
     itemNamePlural: 'songs',
     yearLabel: '',
-    verifierType: 'musicbrainz',
+    verifierType: 'none', // MusicBrainz matching is too strict, skip verification
   },
   books: {
     genre: 'books',

@@ -50,12 +50,17 @@ export class MusicBrainzVerifier implements IItemVerifier {
         return this.createUnverifiedItem(title, year)
       }
 
-      // Find a recording that matches title
-      const match = data.recordings.find((recording) => {
-        const titleMatches =
-          this.normalizeTitle(recording.title) === this.normalizeTitle(title)
-        return titleMatches
+      // Find a recording that matches title (try exact match first, then fuzzy)
+      let match = data.recordings.find((recording) => {
+        return this.normalizeTitle(recording.title) === this.normalizeTitle(title)
       })
+
+      // If no exact match, try fuzzy matching (removing punctuation and articles)
+      if (!match) {
+        match = data.recordings.find((recording) => {
+          return this.fuzzyMatch(recording.title, title)
+        })
+      }
 
       if (match) {
         return {
@@ -105,6 +110,25 @@ export class MusicBrainzVerifier implements IItemVerifier {
 
   private normalizeTitle(title: string): string {
     return title.toLowerCase().trim()
+  }
+
+  /**
+   * Fuzzy match titles by:
+   * - Removing punctuation
+   * - Removing leading articles (a, an, the)
+   * - Removing parenthetical suffixes
+   */
+  private fuzzyMatch(a: string, b: string): boolean {
+    const normalize = (s: string) => {
+      return s
+        .toLowerCase()
+        .replace(/\([^)]*\)/g, '') // Remove parenthetical content
+        .replace(/[^\w\s]/g, '')   // Remove punctuation
+        .replace(/^(the|a|an)\s+/i, '') // Remove leading articles
+        .replace(/\s+/g, ' ')      // Normalize whitespace
+        .trim()
+    }
+    return normalize(a) === normalize(b)
   }
 
   private createUnverifiedItem(title: string, year?: number): VerifiedItem {

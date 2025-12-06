@@ -14,9 +14,9 @@ describe('createVerifier', () => {
     expect(verifier).toBeInstanceOf(TMDBVerifier)
   })
 
-  it('should return MusicBrainzVerifier for music genre', () => {
+  it('should return NoOpVerifier for music genre (verification disabled)', () => {
     const verifier = createVerifier('music')
-    expect(verifier).toBeInstanceOf(MusicBrainzVerifier)
+    expect(verifier).toBeInstanceOf(NoOpVerifier)
   })
 
   it('should return NoOpVerifier for books genre', () => {
