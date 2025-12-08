@@ -1,16 +1,41 @@
 import type { TMDBMovie, TMDBMovieDetails, TMDBDiscoverResponse } from '../types';
 
 const TMDB_BASE_URL = 'https://api.themoviedb.org/3';
-const TMDB_API_KEY = import.meta.env.VITE_TMDB_API_KEY;
 
-if (!TMDB_API_KEY) {
-  console.warn('TMDB_API_KEY is not set. Please add VITE_TMDB_API_KEY to your .env file');
+// Vite-specific import.meta.env type (only available in browser builds)
+interface ViteImportMeta {
+  env?: Record<string, string | undefined>;
 }
+
+// Support both browser (import.meta.env) and Node.js (process.env)
+function getTmdbApiKey(): string {
+  // Try process.env first (Node.js / Vercel serverless)
+  if (typeof process !== 'undefined' && process.env?.TMDB_API_KEY) {
+    return process.env.TMDB_API_KEY;
+  }
+  if (typeof process !== 'undefined' && process.env?.VITE_TMDB_API_KEY) {
+    return process.env.VITE_TMDB_API_KEY;
+  }
+
+  // Check for Vite's import.meta.env (browser environment)
+  // In Node.js ESM, import.meta exists but only has 'url' property, not 'env'
+  const meta = import.meta as ViteImportMeta;
+  if (meta.env?.VITE_TMDB_API_KEY) {
+    return meta.env.VITE_TMDB_API_KEY;
+  }
+
+  console.warn('TMDB_API_KEY is not set. Please add VITE_TMDB_API_KEY to your .env file');
+  return '';
+}
+
+const TMDB_API_KEY = getTmdbApiKey();
 
 export class TMDBService {
   private async fetch<T>(endpoint: string, params: Record<string, string> = {}): Promise<T> {
     const url = new URL(`${TMDB_BASE_URL}${endpoint}`);
-    url.searchParams.append('api_key', TMDB_API_KEY);
+    if (TMDB_API_KEY) {
+      url.searchParams.append('api_key', TMDB_API_KEY);
+    }
 
     Object.entries(params).forEach(([key, value]) => {
       url.searchParams.append(key, value);
