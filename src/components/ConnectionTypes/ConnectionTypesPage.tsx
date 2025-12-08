@@ -10,6 +10,7 @@ import { Box, Text, Button } from "@mond-design-system/theme";
 import { Modal, ModalBody, ModalFooter } from "@mond-design-system/theme/client";
 import { useToast } from "../../providers/useToast";
 import { useGenre } from "../../providers";
+import { supabase } from "../../lib/supabase/client";
 import { ConnectionTypeStore } from "../../services/group-generator";
 import type { ConnectionType } from "../../services/group-generator";
 import { ConnectionTypeHeader } from "./ConnectionTypeHeader";
@@ -20,7 +21,7 @@ import {
   ConnectionTypeFormData,
 } from "./ConnectionTypeForm";
 
-const store = new ConnectionTypeStore();
+const store = new ConnectionTypeStore(supabase);
 
 export function ConnectionTypesPage() {
   const { showSuccess, showError } = useToast();

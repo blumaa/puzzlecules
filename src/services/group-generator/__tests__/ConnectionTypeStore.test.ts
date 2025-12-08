@@ -1,37 +1,22 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest'
+import type { SupabaseClient } from '@supabase/supabase-js'
 import type { ConnectionCategory } from '../types'
-
-// Use vi.hoisted to create mocks that are available during module hoisting
-const { mockFrom, mockSelect, mockInsert, mockUpdate, mockDelete, mockEq, mockOrder, mockSingle } = vi.hoisted(() => {
-  const mockSelect = vi.fn()
-  const mockInsert = vi.fn()
-  const mockUpdate = vi.fn()
-  const mockDelete = vi.fn()
-  const mockEq = vi.fn()
-  const mockSingle = vi.fn()
-  const mockOrder = vi.fn()
-  const mockFrom = vi.fn()
-
-  return {
-    mockFrom,
-    mockSelect,
-    mockInsert,
-    mockUpdate,
-    mockDelete,
-    mockEq,
-    mockOrder,
-    mockSingle,
-  }
-})
-
-vi.mock('../../../lib/supabase/client', () => ({
-  supabase: {
-    from: mockFrom,
-  },
-}))
-
-// Import after mock setup
 import { ConnectionTypeStore } from '../ConnectionTypeStore'
+
+// Create mock functions
+const mockSelect = vi.fn()
+const mockInsert = vi.fn()
+const mockUpdate = vi.fn()
+const mockDelete = vi.fn()
+const mockEq = vi.fn()
+const mockSingle = vi.fn()
+const mockOrder = vi.fn()
+const mockFrom = vi.fn()
+
+// Create mock Supabase client
+const mockSupabase = {
+  from: mockFrom,
+} as unknown as SupabaseClient
 
 describe('ConnectionTypeStore', () => {
   let store: ConnectionTypeStore
@@ -47,8 +32,8 @@ describe('ConnectionTypeStore', () => {
   }
 
   beforeEach(() => {
-    store = new ConnectionTypeStore()
     vi.clearAllMocks()
+    store = new ConnectionTypeStore(mockSupabase)
 
     // Setup default mock chain
     mockFrom.mockReturnValue({

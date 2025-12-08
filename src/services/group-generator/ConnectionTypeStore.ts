@@ -7,7 +7,6 @@
  */
 
 import type { SupabaseClient } from '@supabase/supabase-js'
-import { supabase as globalSupabase } from '../../lib/supabase/client'
 import type {
   ConnectionType,
   ConnectionCategory,
@@ -30,12 +29,8 @@ interface ConnectionTypeRow {
 export class ConnectionTypeStore implements IConnectionTypeStore {
   private supabase: SupabaseClient
 
-  /**
-   * Create a ConnectionTypeStore
-   * @param supabaseClient - Optional Supabase client. If not provided, uses the global client.
-   */
-  constructor(supabaseClient?: SupabaseClient) {
-    this.supabase = supabaseClient || globalSupabase
+  constructor(supabaseClient: SupabaseClient) {
+    this.supabase = supabaseClient
   }
   /**
    * Get all connection types, optionally filtered by genre

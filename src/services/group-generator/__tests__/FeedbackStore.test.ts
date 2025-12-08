@@ -1,34 +1,20 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest'
+import type { SupabaseClient } from '@supabase/supabase-js'
 import type { GeneratedGroup, VerifiedItem } from '../types'
-
-// Use vi.hoisted to create mocks that are available during module hoisting
-const { mockFrom, mockSelect, mockInsert, mockEq, mockOrder, mockLimit } =
-  vi.hoisted(() => {
-    const mockSelect = vi.fn()
-    const mockInsert = vi.fn()
-    const mockEq = vi.fn()
-    const mockOrder = vi.fn()
-    const mockLimit = vi.fn()
-    const mockFrom = vi.fn()
-
-    return {
-      mockFrom,
-      mockSelect,
-      mockInsert,
-      mockEq,
-      mockOrder,
-      mockLimit,
-    }
-  })
-
-vi.mock('../../../lib/supabase/client', () => ({
-  supabase: {
-    from: mockFrom,
-  },
-}))
-
-// Import after mock setup
 import { FeedbackStore } from '../FeedbackStore'
+
+// Create mock functions
+const mockSelect = vi.fn()
+const mockInsert = vi.fn()
+const mockEq = vi.fn()
+const mockOrder = vi.fn()
+const mockLimit = vi.fn()
+const mockFrom = vi.fn()
+
+// Create mock Supabase client
+const mockSupabase = {
+  from: mockFrom,
+} as unknown as SupabaseClient
 
 describe('FeedbackStore', () => {
   let store: FeedbackStore
@@ -68,8 +54,8 @@ describe('FeedbackStore', () => {
   }
 
   beforeEach(() => {
-    store = new FeedbackStore()
     vi.clearAllMocks()
+    store = new FeedbackStore(mockSupabase)
 
     // Setup default mock chain
     mockFrom.mockReturnValue({

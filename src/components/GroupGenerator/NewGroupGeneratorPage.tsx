@@ -42,8 +42,8 @@ import { supabase } from "../../lib/supabase/client";
 import "./NewGroupGeneratorPage.css";
 
 // Initialize services (these are safe for browser - they use Supabase, not Anthropic)
-const connectionTypeStore = new ConnectionTypeStore();
-const feedbackStore = new FeedbackStore();
+const connectionTypeStore = new ConnectionTypeStore(supabase);
+const feedbackStore = new FeedbackStore(supabase);
 const groupStorage = new SupabaseGroupStorage(supabase);
 
 const DIFFICULTY_OPTIONS: {

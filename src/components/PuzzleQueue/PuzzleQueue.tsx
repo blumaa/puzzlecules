@@ -48,8 +48,8 @@ import "./PuzzleQueue.css";
 // Create storage instances
 const storage = new SupabaseStorage(supabase);
 const groupStorage = new SupabaseGroupStorage(supabase);
-const connectionTypeStore = new ConnectionTypeStore();
-const feedbackStore = new FeedbackStore();
+const connectionTypeStore = new ConnectionTypeStore(supabase);
+const feedbackStore = new FeedbackStore(supabase);
 
 // Get API key from environment (for AI generation)
 const anthropicApiKey = import.meta.env.VITE_ANTHROPIC_API_KEY as string | undefined;

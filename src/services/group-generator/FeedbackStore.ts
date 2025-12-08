@@ -6,7 +6,6 @@
  */
 
 import type { SupabaseClient } from '@supabase/supabase-js'
-import { supabase as globalSupabase } from '../../lib/supabase/client'
 import type {
   IFeedbackStore,
   GeneratedGroup,
@@ -32,12 +31,8 @@ interface FeedbackRow {
 export class FeedbackStore implements IFeedbackStore {
   private supabase: SupabaseClient
 
-  /**
-   * Create a FeedbackStore
-   * @param supabaseClient - Optional Supabase client. If not provided, uses the global client.
-   */
-  constructor(supabaseClient?: SupabaseClient) {
-    this.supabase = supabaseClient || globalSupabase
+  constructor(supabaseClient: SupabaseClient) {
+    this.supabase = supabaseClient
   }
   /**
    * Record feedback for a generated group
