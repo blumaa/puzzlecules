@@ -5,7 +5,8 @@
  * Provides examples for prompt injection to improve future generations.
  */
 
-import { supabase } from '../../lib/supabase/client'
+import type { SupabaseClient } from '@supabase/supabase-js'
+import { supabase as globalSupabase } from '../../lib/supabase/client'
 import type {
   IFeedbackStore,
   GeneratedGroup,
@@ -29,6 +30,15 @@ interface FeedbackRow {
 }
 
 export class FeedbackStore implements IFeedbackStore {
+  private supabase: SupabaseClient
+
+  /**
+   * Create a FeedbackStore
+   * @param supabaseClient - Optional Supabase client. If not provided, uses the global client.
+   */
+  constructor(supabaseClient?: SupabaseClient) {
+    this.supabase = supabaseClient || globalSupabase
+  }
   /**
    * Record feedback for a generated group
    */
@@ -49,7 +59,7 @@ export class FeedbackStore implements IFeedbackStore {
       accepted,
       rejection_reason: reason || null,
     }
-    const { error } = await supabase
+    const { error } = await this.supabase
       .from('group_feedback')
       .insert(insertData as never)
       .select()
@@ -63,7 +73,7 @@ export class FeedbackStore implements IFeedbackStore {
    * Get accepted examples for prompt injection, optionally filtered by genre
    */
   async getAcceptedExamples(limit: number, genre?: Genre): Promise<FeedbackRecord[]> {
-    let query = supabase
+    let query = this.supabase
       .from('group_feedback')
       .select('*')
       .eq('accepted', true)
@@ -87,7 +97,7 @@ export class FeedbackStore implements IFeedbackStore {
    * Get rejected examples for prompt injection, optionally filtered by genre
    */
   async getRejectedExamples(limit: number, genre?: Genre): Promise<FeedbackRecord[]> {
-    let query = supabase
+    let query = this.supabase
       .from('group_feedback')
       .select('*')
       .eq('accepted', false)

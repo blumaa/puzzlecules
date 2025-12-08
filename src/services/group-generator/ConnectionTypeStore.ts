@@ -6,7 +6,8 @@
  * that AI can generate (e.g., "Titles that are verbs", "Directed by ___").
  */
 
-import { supabase } from '../../lib/supabase/client'
+import type { SupabaseClient } from '@supabase/supabase-js'
+import { supabase as globalSupabase } from '../../lib/supabase/client'
 import type {
   ConnectionType,
   ConnectionCategory,
@@ -27,11 +28,20 @@ interface ConnectionTypeRow {
 }
 
 export class ConnectionTypeStore implements IConnectionTypeStore {
+  private supabase: SupabaseClient
+
+  /**
+   * Create a ConnectionTypeStore
+   * @param supabaseClient - Optional Supabase client. If not provided, uses the global client.
+   */
+  constructor(supabaseClient?: SupabaseClient) {
+    this.supabase = supabaseClient || globalSupabase
+  }
   /**
    * Get all connection types, optionally filtered by genre
    */
   async getAll(genre?: Genre): Promise<ConnectionType[]> {
-    let query = supabase
+    let query = this.supabase
       .from('connection_types')
       .select('*')
       .order('category', { ascending: true })
@@ -53,7 +63,7 @@ export class ConnectionTypeStore implements IConnectionTypeStore {
    * Get only active connection types, optionally filtered by genre
    */
   async getActive(genre?: Genre): Promise<ConnectionType[]> {
-    let query = supabase
+    let query = this.supabase
       .from('connection_types')
       .select('*')
       .eq('active', true)
@@ -76,7 +86,7 @@ export class ConnectionTypeStore implements IConnectionTypeStore {
    * Get connection types by category, optionally filtered by genre
    */
   async getByCategory(category: ConnectionCategory, genre?: Genre): Promise<ConnectionType[]> {
-    let query = supabase
+    let query = this.supabase
       .from('connection_types')
       .select('*')
       .eq('category', category)
@@ -109,7 +119,7 @@ export class ConnectionTypeStore implements IConnectionTypeStore {
       active: type.active,
       genre: type.genre,
     }
-    const { data, error } = await supabase
+    const { data, error } = await this.supabase
       .from('connection_types')
       .insert(insertData as never)
       .select()
@@ -140,7 +150,7 @@ export class ConnectionTypeStore implements IConnectionTypeStore {
     if (updates.active !== undefined) updateData.active = updates.active
     if (updates.genre !== undefined) updateData.genre = updates.genre
 
-    const { data, error } = await supabase
+    const { data, error } = await this.supabase
       .from('connection_types')
       .update(updateData as never)
       .eq('id', id)
@@ -158,7 +168,7 @@ export class ConnectionTypeStore implements IConnectionTypeStore {
    * Delete a connection type
    */
   async delete(id: string): Promise<void> {
-    const { error } = await supabase
+    const { error } = await this.supabase
       .from('connection_types')
       .delete()
       .eq('id', id)
@@ -173,7 +183,7 @@ export class ConnectionTypeStore implements IConnectionTypeStore {
    */
   async toggleActive(id: string): Promise<ConnectionType> {
     // Get current state
-    const { data: current, error: getError } = await supabase
+    const { data: current, error: getError } = await this.supabase
       .from('connection_types')
       .select('*')
       .eq('id', id)
@@ -184,7 +194,7 @@ export class ConnectionTypeStore implements IConnectionTypeStore {
     }
 
     // Toggle active
-    const { data, error } = await supabase
+    const { data, error } = await this.supabase
       .from('connection_types')
       .update({ active: !(current as { active: boolean }).active } as never)
       .eq('id', id)
