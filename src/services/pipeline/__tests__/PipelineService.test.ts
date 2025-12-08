@@ -60,6 +60,7 @@ const createMockPuzzle = (id: string, groupIds: string[]): StoredPuzzle => ({
   groupIds,
   status: 'pending',
   genre: 'films',
+  source: 'system',
 });
 
 describe('PipelineService', () => {

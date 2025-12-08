@@ -65,6 +65,7 @@ export interface Database {
           metadata: Json | null;
           genre: string;
           groups: Json | null;
+          source: 'system' | 'user';
         };
         Insert: {
           id?: string;
@@ -76,6 +77,7 @@ export interface Database {
           metadata?: Json | null;
           genre?: string;
           groups?: Json | null;
+          source?: 'system' | 'user';
         };
         Update: {
           id?: string;
@@ -87,6 +89,7 @@ export interface Database {
           metadata?: Json | null;
           genre?: string;
           groups?: Json | null;
+          source?: 'system' | 'user';
         };
       };
       user_stats: {

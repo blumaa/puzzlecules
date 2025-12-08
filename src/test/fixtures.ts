@@ -118,6 +118,7 @@ export function createMockStoredPuzzle(overrides: Partial<StoredPuzzle> = {}): S
     groupIds: ['group-1', 'group-2', 'group-3', 'group-4'],
     status: 'pending' as PuzzleStatus,
     genre: DEFAULT_TEST_GENRE,
+    source: 'system',
     groups: createMockGroups(),
     ...overrides,
   };

@@ -7,11 +7,5 @@
   "rewrites": [
     { "source": "/api/(.*)", "destination": "/api/$1" },
     { "source": "/(.*)", "destination": "/index.html" }
-  ],
-  "crons": [
-    {
-      "path": "/api/pipeline-fill",
-      "schedule": "0 6 1,15 * *"
-    }
   ]
 }

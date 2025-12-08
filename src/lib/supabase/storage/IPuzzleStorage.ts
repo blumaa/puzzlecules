@@ -14,6 +14,11 @@ import type { Database } from '../types';
 export type PuzzleStatus = Database['public']['Tables']['puzzles']['Row']['status'];
 
 /**
+ * Puzzle source - indicates origin of the puzzle
+ */
+export type PuzzleSource = Database['public']['Tables']['puzzles']['Row']['source'];
+
+/**
  * Input for creating a new puzzle (references group_ids)
  */
 export interface PuzzleInput {
@@ -38,6 +43,8 @@ export interface StoredPuzzle {
   metadata?: Record<string, unknown>;
   /** Genre/domain of the puzzle */
   genre: Genre;
+  /** Source of the puzzle (system-created or user-submitted) */
+  source: PuzzleSource;
   // Populated when fetched with groups
   groups?: Group[];
 }
@@ -53,6 +60,8 @@ export interface PuzzleListFilters {
   unscheduled?: boolean;
   /** Filter by genre/domain */
   genre?: Genre;
+  /** Filter by puzzle source (system-created or user-submitted) */
+  source?: PuzzleSource;
   limit?: number;
   offset?: number;
 }

@@ -11,6 +11,7 @@ const mockPuzzle: StoredPuzzle = {
   groupIds: ['g1', 'g2', 'g3', 'g4'],
   status: 'pending',
   genre: 'films',
+  source: 'system',
 };
 
 const meta: Meta<typeof CalendarDay> = {

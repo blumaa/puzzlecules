@@ -13,6 +13,7 @@ const NAV_LINKS: NavLinkItem[] = [
   { path: "/admin/groups", label: "Group Pool" },
   { path: "/admin/build", label: "Build Puzzle" },
   { path: "/admin/puzzles", label: "Puzzle Queue" },
+  { path: "/admin/submissions", label: "User Submissions" },
 ];
 
 interface HeaderMenuProps {

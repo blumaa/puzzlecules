@@ -36,7 +36,8 @@ export class SupabaseStorage implements IPuzzleStorage {
   constructor(private supabase: SupabaseClient<Database>) {}
 
   /**
-   * Convert database row to StoredPuzzle (without groups populated)
+   * Convert database row to StoredPuzzle
+   * Includes inline groups from JSON column if present (used by user submissions)
    */
   private rowToStoredPuzzle(row: DbPuzzleRow): StoredPuzzle {
     return {
@@ -45,9 +46,11 @@ export class SupabaseStorage implements IPuzzleStorage {
       puzzleDate: row.puzzle_date,
       title: row.title,
       groupIds: row.group_ids,
+      groups: row.groups ? (row.groups as unknown as Group[]) : undefined,
       status: row.status,
       metadata: row.metadata as Record<string, unknown> | undefined,
       genre: ((row as { genre?: string }).genre || 'films') as Genre,
+      source: ((row as { source?: string }).source || 'system') as 'system' | 'user',
     };
   }
 
@@ -202,6 +205,10 @@ export class SupabaseStorage implements IPuzzleStorage {
       query = query.eq('genre', filters.genre);
     }
 
+    if (filters?.source) {
+      query = query.eq('source', filters.source);
+    }
+
     // Apply pagination
     const limit = filters?.limit ?? 50;
     const offset = filters?.offset ?? 0;
@@ -219,16 +226,20 @@ export class SupabaseStorage implements IPuzzleStorage {
     // Convert rows to StoredPuzzle
     const puzzles = data.map((row) => this.rowToStoredPuzzle(row));
 
-    // Fetch groups for all puzzles
-    const allGroupIds = [...new Set(puzzles.flatMap((p) => p.groupIds))];
-    const allGroups = await this.fetchGroupsByIds(allGroupIds);
-    const groupMap = new Map(allGroups.map((g) => [g.id, g]));
+    // Fetch groups for puzzles that don't have inline groups (i.e., system puzzles with groupIds)
+    const puzzlesNeedingGroups = puzzles.filter((p) => !p.groups && p.groupIds.length > 0);
+    const allGroupIds = [...new Set(puzzlesNeedingGroups.flatMap((p) => p.groupIds))];
 
-    // Populate groups for each puzzle
-    for (const puzzle of puzzles) {
-      puzzle.groups = puzzle.groupIds
-        .map((id) => groupMap.get(id))
-        .filter((g): g is Group => g !== undefined);
+    if (allGroupIds.length > 0) {
+      const allGroups = await this.fetchGroupsByIds(allGroupIds);
+      const groupMap = new Map(allGroups.map((g) => [g.id, g]));
+
+      // Populate groups for puzzles that need them
+      for (const puzzle of puzzlesNeedingGroups) {
+        puzzle.groups = puzzle.groupIds
+          .map((id) => groupMap.get(id))
+          .filter((g): g is Group => g !== undefined);
+      }
     }
 
     return {

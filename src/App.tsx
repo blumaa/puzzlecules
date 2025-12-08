@@ -15,6 +15,7 @@ import { GroupPool } from "./components/GroupPool/GroupPool";
 import { PuzzleBuilder } from "./components/PuzzleBuilder/PuzzleBuilder";
 import { ConnectionTypesPage } from "./components/ConnectionTypes/ConnectionTypesPage";
 import { NewGroupGeneratorPage } from "./components/GroupGenerator/NewGroupGeneratorPage";
+import { UserSubmissionsPage } from "./components/UserSubmissions";
 import { Footer } from "./components/Footer/Footer";
 
 const queryClient = new QueryClient({
@@ -60,6 +61,7 @@ function ThemedApp() {
                 <Route path="build" element={<PuzzleBuilder />} />
                 <Route path="connection-types" element={<ConnectionTypesPage />} />
                 <Route path="generate" element={<NewGroupGeneratorPage />} />
+                <Route path="submissions" element={<UserSubmissionsPage />} />
               </Route>
             </Routes>
             <Footer />

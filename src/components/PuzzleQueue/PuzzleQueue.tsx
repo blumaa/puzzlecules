@@ -24,8 +24,7 @@ import type { StoredPuzzle } from "../../lib/supabase/storage/IPuzzleStorage";
 import type { DifficultyColor } from "../../lib/supabase/storage/IGroupStorage";
 import type { Group } from "../../types";
 import { CalendarDay } from "./CalendarDay";
-import { PuzzleDetailDrawer } from "./PuzzleDetailDrawer";
-import { SchedulePuzzleDrawer } from "./SchedulePuzzleDrawer";
+import { PuzzleDrawer } from "./PuzzleDrawer";
 import { GroupSwapDrawer } from "./GroupSwapDrawer";
 import { PipelineControls } from "./PipelineControls";
 import {
@@ -225,10 +224,7 @@ export function PuzzleQueue() {
     groupStorage,
     { enabled: swapGroupInfo !== null }
   );
-  const showDetailDrawer =
-    selectedDate !== null && selectedPuzzle !== undefined;
-  const showScheduleDrawer =
-    selectedDate !== null && selectedPuzzle === undefined;
+  const showDrawer = selectedDate !== null;
 
   // Navigation handlers
   const goToPrevWeek = () => {
@@ -501,30 +497,20 @@ export function PuzzleQueue() {
           </Box>
         )}
       </Box>
-      {/* Puzzle Detail Drawer - for days with scheduled puzzle */}
-      {showDetailDrawer && selectedPuzzle && (
-        <PuzzleDetailDrawer
+      {/* Unified Puzzle Drawer - handles both scheduled and unscheduled days */}
+      {showDrawer && (
+        <PuzzleDrawer
           isOpen={true}
           onClose={handleCloseDrawer}
           selectedDate={selectedDate!}
-          puzzle={selectedPuzzle}
+          scheduledPuzzle={selectedPuzzle ?? null}
+          availablePuzzles={availableData?.puzzles ?? []}
+          onSchedule={handleSchedule}
           onUpdate={handlePuzzleUpdate}
           onUnschedule={handlePuzzleUnschedule}
           onDelete={handlePuzzleDelete}
-          isUpdating={updateMutation.isPending || deleteMutation.isPending}
+          isLoading={updateMutation.isPending || deleteMutation.isPending}
           onSwapGroup={handleSwapGroup}
-        />
-      )}
-
-      {/* Schedule Puzzle Drawer - for empty days */}
-      {showScheduleDrawer && (
-        <SchedulePuzzleDrawer
-          isOpen={true}
-          onClose={handleCloseDrawer}
-          selectedDate={selectedDate!}
-          availablePuzzles={availableData?.puzzles ?? []}
-          onSchedule={handleSchedule}
-          isScheduling={updateMutation.isPending}
         />
       )}
 
