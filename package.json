@@ -11,7 +11,8 @@
     "test:watch": "vitest",
     "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
     "storybook": "storybook dev -p 6006",
-    "build-storybook": "storybook build"
+    "build-storybook": "storybook build",
+    "pipeline:fill": "bun run scripts/pipeline-fill.ts"
   },
   "dependencies": {
     "@amplitude/analytics-browser": "^2.31.3",
